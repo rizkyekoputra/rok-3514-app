@@ -12,8 +12,8 @@ The old system ([rok-3514](https://github.com/rizkyekoputra/rok-3514), Apps Scri
 | Ledger schema: officers, payments, account changes, must-migrate log, claim status | live (`supabase/migrations/`) |
 | `ledger_get` / `ledger_post`: same JSON as the Apps Script `doGet` / `doPost` | live, tested |
 | Hourly one-way copy from the old ledger (`.github/workflows/sync-ledger.yml`) | live; fails the run if the copy differs |
-| Payment claims with proof files (Storage) | not yet |
-| Dashboard data as `data.json` + frontend reading Supabase | not yet |
+| Payment claims with proof files (private Storage bucket `claims`, Edge Function `claim-files`, daily cleanup) | live |
+| Dashboard: old page split into `data.json` + Supabase ledger, on GitHub Pages (`.github/workflows/pages.yml`, hourly) | built; needs Pages enabled |
 | Upload → AI extract → preview → submit | not yet |
 
 ## Security model
@@ -23,6 +23,9 @@ The old system ([rok-3514](https://github.com/rizkyekoputra/rok-3514), Apps Scri
   - `rpc/ledger_get {p_key}`: public reads; the R4-only parts (`zeroList`, `claimList`) need a valid key.
   - `rpc/ledger_post {req}`: player proposals without a key; every R4 action checks `sha256(key)` against `ledger.officers`.
 - R4 keys are never stored, only their SHA-256. These are the same hashes as the old ledger, so existing R4 links keep working.
+- Claim proof files sit in the private bucket `claims` with no Storage policies. The `claim-files` Edge Function
+  hands out signed URLs (upload: one file, no overwrite; view: 10 minutes) only after SQL has checked the claim
+  token or R4 key. Claim tokens are stored as SHA-256.
 - `rpc/ledger_import` is callable only with the **secret** key. That key lives in `.env` (gitignored) and in the GitHub Actions secrets `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`, never in code or chat.
 
 ## Day to day
@@ -36,6 +39,23 @@ gh workflow run sync-ledger.yml                    # same, on GitHub
 
 The import replaces only rows marked `imported`. Rows written through the new API are kept.
 
+### Dashboard
+
+```sh
+python3 scripts/web/build.py                  # site/ from the published old dashboard (read-only)
+python3 -m http.server -d site 8000           # look at it locally (reads the live Supabase ledger)
+```
+
+`web/loader.js` loads `data.json` + `ledger_get`, then runs the old page's script with its ledger calls routed to
+Supabase. The build fails loudly if a patch no longer matches the old page.
+
+### Payment claims
+
+```sh
+python3 scripts/claims/cleanup_claims.py           # what is due (files 30 days after the decision, stale uploads)
+python3 scripts/claims/cleanup_claims.py --write   # delete them; daily on GitHub: cleanup-claims.yml
+```
+
 ### Database changes
 
 ```sh
@@ -43,6 +63,14 @@ supabase migration new <name>          # write SQL in supabase/migrations/
 supabase start && supabase db reset    # test locally (Docker)
 supabase db push --remote --dry-run    # see what would change
 supabase db push --remote              # apply
+supabase functions deploy claim-files  # Edge Function
+```
+
+Local end-to-end test of claims (local stack only, it refuses anything else):
+
+```sh
+supabase db reset && supabase functions serve &   # then:
+python3 scripts/test/test_claims.py
 ```
 
 ## Not copied from the old ledger
@@ -50,6 +78,7 @@ supabase db push --remote              # apply
 The old ledger's public answer is a summary, so these are missing:
 - undo history of payments (only the current state);
 - who zeroed whom (imported zero records say `imported`);
-- claim proof files and amounts (only each fine's latest claim status).
+- claim proof files and amounts (only each fine's latest claim status). Imported claims are not in the R4 claim list
+  and can't be decided here; decide them in the old ledger.
 
 What the dashboard shows is identical, and `--check` verifies it.
