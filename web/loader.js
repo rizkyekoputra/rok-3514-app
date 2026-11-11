@@ -45,6 +45,65 @@
     },
   };
 
+  // ---------- CSV export: a "Download CSV" button above every data table ----------
+  // Deterministic: the rows and columns the table shows right now (search/filters applied), in the same order, as
+  // displayed text; buttons/inputs dropped; RFC 4180 quoting, CRLF, UTF-8 BOM (Excel shows the names right).
+  // The file name comes from the card title + the data date, so the same view always gives the same file.
+  const clean = el => {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('button, input, select, textarea, svg, script, style, [hidden]').forEach(x => x.remove());
+    return c.textContent.replace(/\s+/g, ' ').trim();
+  };
+  const cellCsv = v => {
+    if (/^[=+@\t\r]/.test(v) || (/^-/.test(v) && !/^-[\d.,]+$/.test(v))) v = "'" + v;  // no formulas in Excel
+    return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  };
+  const expand = tr => [...tr.cells].flatMap(td => [td, ...Array(Math.max(0, (td.colSpan || 1) - 1)).fill(null)]);
+  function tableCsv(table) {
+    const rows = [...table.tBodies].flatMap(b => [...b.rows]).filter(tr => !tr.hidden);
+    let head = table.tHead && table.tHead.rows.length ? table.tHead.rows[table.tHead.rows.length - 1] : null;
+    if (!head && rows.length && [...rows[0].cells].every(c => c.tagName === 'TH')) head = rows.shift();
+    // drop message rows ("No players match…"): one cell spanning several columns
+    const grid = rows.map(expand).filter(r => !(r[0] && r[0].colSpan > 1 && r.filter(Boolean).length === 1));
+    // hidden header cells belong to R4-only columns whose cells are not rendered at all, so rows line up with the
+    // visible headers only
+    const hcells = head ? expand(head).filter(c => !(c && c.hidden)) : [];
+    const width = Math.max(hcells.length, ...grid.map(r => r.length), 0);
+    const text = (c) => (c ? clean(c) : '');
+    // drop columns with no header and no text in any row (action buttons)
+    const keep = [...Array(width).keys()].filter(i => text(hcells[i]) || grid.some(r => text(r[i])));
+    const lines = [];
+    if (head) lines.push(keep.map(i => cellCsv(text(hcells[i]))).join(','));
+    grid.forEach(r => lines.push(keep.map(i => cellCsv(text(r[i]))).join(',')));
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+  const slug = s => s.toLowerCase().normalize('NFKD').replace(/[^\w]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'table';
+  function download(table) {
+    const card = table.closest('.card'), h = card && card.querySelector('h2');
+    const name = `3514-${slug(h ? clean(h) : 'table')}-${(window.__DATA && window.__DATA.updated) || 'data'}.csv`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([tableCsv(table)], {type: 'text/csv;charset=utf-8'}));
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  function addCsvButtons() {
+    document.querySelectorAll('.table-wrap > table').forEach(table => {
+      const wrap = table.parentElement;
+      if (wrap.dataset.csv) return;
+      wrap.dataset.csv = '1';
+      const bar = document.createElement('div');
+      bar.className = 'csv-bar';
+      bar.innerHTML = '<button class="act ghost" type="button">Download CSV</button>';
+      bar.firstChild.addEventListener('click', () => download(table));
+      wrap.before(bar);
+    });
+  }
+  const css = document.createElement('style');
+  css.textContent = '.csv-bar{display:flex;justify-content:flex-end;margin-top:8px}';
+  document.head.appendChild(css);
+  window.LEDGER.tableCsv = tableCsv;  // for tests
+
   const start = (data, live) => {
     data.finesUrl = MARK;
     if (live) {
@@ -55,6 +114,13 @@
     const s = document.createElement('script');
     s.textContent = document.getElementById('app').textContent;
     document.body.appendChild(s);
+    addCsvButtons();
+    let queued = false;  // tables re-rendered or added later (dialogs, tabs) get their button too
+    new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => { queued = false; addCsvButtons(); });
+    }).observe(document.body, {childList: true, subtree: true});
   };
   Promise.all([
     realFetch('data.json', {cache: 'no-cache'}).then(r => { if (!r.ok) throw new Error('data.json: HTTP ' + r.status); return r.json(); }),

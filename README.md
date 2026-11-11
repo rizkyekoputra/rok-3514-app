@@ -49,6 +49,10 @@ python3 -m http.server -d site 8000           # look at it locally (reads the li
 `web/loader.js` loads `data.json` + `ledger_get`, then runs the old page's script with its ledger calls routed to
 Supabase. The build fails loudly if a patch no longer matches the old page.
 
+Every data table has a **Download CSV** button (also `web/loader.js`): exactly the rows and columns shown (search and
+filters applied), as displayed, buttons left out; RFC 4180 quoting, CRLF, UTF-8 BOM for Excel; file name
+`3514-<table title>-<data date>.csv`, so the same view always gives the same file.
+
 ### Payment claims
 
 ```sh
