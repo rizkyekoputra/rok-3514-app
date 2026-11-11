@@ -1,0 +1,25 @@
+# GitHub turns off scheduled workflows in a public repo after 60 days without a commit, which would stop the daily
+# ledger sync (and with it the activity that keeps the free Supabase project from pausing). Weekly check: if the last
+# commit is 45+ days old, push an empty commit. Otherwise it does nothing.
+name: Keep schedules alive
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Mondays 02:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          last=$(git log -1 --format=%ct)
+          age=$(( ($(date +%s) - last) / 86400 ))
+          echo "last commit ${age} days ago"
+          if [ "$age" -lt 45 ]; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit --allow-empty -m "Keep scheduled workflows alive (no commits for ${age} days)"
+          git push
