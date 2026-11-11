@@ -11,7 +11,7 @@ The old system ([rok-3514](https://github.com/rizkyekoputra/rok-3514), Apps Scri
 | Supabase project `gwrqjzqkgvkapjzgktaf` (Singapore) | live |
 | Ledger schema: officers, payments, account changes, must-migrate log, claim status | live (`supabase/migrations/`) |
 | `ledger_get` / `ledger_post`: same JSON as the Apps Script `doGet` / `doPost` | live, tested |
-| Hourly one-way copy from the old ledger (`.github/workflows/sync-ledger.yml`) | live; fails the run if the copy differs |
+| Daily one-way copy from the old ledger (`.github/workflows/sync-ledger.yml`) | live; fails the run if the copy differs |
 | Payment claims with proof files (private Storage bucket `claims`, Edge Function `claim-files`, daily cleanup) | live |
 | Dashboard: old page split into `data.json` + Supabase ledger, on GitHub Pages (`.github/workflows/pages.yml`, hourly) | live: https://rizkyekoputra.github.io/rok-3514-app/ |
 | Upload → AI extract → preview → submit | not yet |

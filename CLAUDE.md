@@ -68,7 +68,7 @@ python3 scripts/import/import_ledger.py --write    # replace imported rows (impo
 python3 scripts/import/import_ledger.py --check    # compare new vs old ledger_get answers
 ```
 
-`.github/workflows/sync-ledger.yml` runs `--write` hourly (public GET of the old web app + public checkout of the
+`.github/workflows/sync-ledger.yml` runs `--write` daily (01:17 UTC) (public GET of the old web app + public checkout of the
 old repo for player names) and fails if the result differs. Rows written through the new API are never touched by
 the import, so using the new write paths for real before the switchover makes `--check` report differences.
 
