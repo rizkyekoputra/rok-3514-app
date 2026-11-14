@@ -26,6 +26,10 @@ Google Sheet + Apps Script; this dashboard replaces the old GitHub Pages one. Se
   frontend. Scripts read it from the environment / `.env` (see `load_env()` in `scripts/import/import_ledger.py`).
 - R4 keys are never stored anywhere in this repo or database, only `sha256(key)` in `ledger.officers.key_hash`.
 - Future AI provider keys go in Supabase Vault, not in code or `.env` files that get committed.
+- Vault `github_recalc_token`: fine-grained GitHub token (rizkyekoputra/rok-3514 only, Actions read/write) that
+  `ledger.start_recalc()` uses to start the `recalc.yml` Action (pg_net, sent after commit) when an approval is made
+  (`approve`, or an approver's own `farm`/`main`), like the Apps Script's `triggerRecalc()`. The user sets or rotates
+  it in the Supabase SQL editor; never handle the value yourself. Without it, answers say the hourly run picks it up.
 
 ## Security model
 
