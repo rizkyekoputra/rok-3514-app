@@ -124,20 +124,26 @@ def build(old):
 
 
 def compare(old, new):
-    """Differences between the old and new ledger answers, for the parts the dashboard reads."""
-    diffs = []
+    """(problems, notes) between the old and new ledger answers, for the parts the dashboard reads.
+
+    problems: something the old ledger has that the new one lacks, or differing officers (the copy is broken).
+    notes: entries only in the new ledger, or changed there: R4 actions made on the new dashboard (expected).
+    """
+    problems, notes = [], []
     norm = lambda v: json.loads(json.dumps(v, sort_keys=True))
     for part in ('paid', 'accounts', 'migrate', 'claims'):
         a, b = norm(old.get(part, {})), norm(new.get(part, {}))
         for k in sorted(set(a) | set(b)):
-            if a.get(k) != b.get(k):
-                diffs.append(f'{part}[{k}]: old {a.get(k)} / new {b.get(k)}')
+            if a.get(k) == b.get(k):
+                continue
+            line = f'{part}[{k}]: old {a.get(k)} / new {b.get(k)}'
+            (problems if k not in b else notes).append(line)
     oa = sorted((o['n'], o['h'], bool(o.get('a'))) for o in old.get('officers', []))
     ob = sorted((o['n'], o['h'], bool(o.get('a'))) for o in new.get('officers', []))
     if oa != ob:
-        diffs.append(f'officers differ: {len(oa)} old / {len(ob)} new (names: '
-                     f'{sorted(set(x[0] for x in oa) ^ set(x[0] for x in ob)) or "same names, hash or approver differs"})')
-    return diffs
+        problems.append(f'officers differ: {len(oa)} old / {len(ob)} new (names: '
+                        f'{sorted(set(x[0] for x in oa) ^ set(x[0] for x in ob)) or "same names, hash or approver differs"})')
+    return problems, notes
 
 
 def main():
@@ -155,9 +161,12 @@ def main():
         print('imported:', rpc(url, skey, 'ledger_import', {'data': data}))
     if args.check or args.write:
         new = rpc(url, skey, 'ledger_get', {'p_key': None})
-        diffs = compare(old, new)
-        print('\n'.join(diffs) if diffs else 'new ledger matches the old one (paid, accounts, migrate, claims, officers)')
-        sys.exit(1 if diffs else 0)
+        problems, notes = compare(old, new)
+        if notes:
+            print(f'{len(notes)} entr{"y" if len(notes) == 1 else "ies"} only in / changed by the new ledger (actions on the new dashboard):')
+            print('\n'.join('  ' + n for n in notes))
+        print('\n'.join(problems) if problems else 'everything in the old ledger is in the new one (paid, accounts, migrate, claims, officers)')
+        sys.exit(1 if problems else 0)
     if not args.write:
         print('Rerun with --write to import.')
 
