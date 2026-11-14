@@ -11,6 +11,8 @@ and splits it into:
   python3 -m http.server -d site 8000           # look at it
 """
 import argparse
+import csv
+import datetime
 import json
 import os
 import re
@@ -32,6 +34,48 @@ PATCHES = [
 ]
 
 
+def read_csv(path):
+    with open(path, encoding='utf-8-sig', newline='') as f:
+        return list(csv.DictReader(f))
+
+
+def num(v):
+    return int(v.replace(',', '')) if v and v.strip() else None
+
+
+def merge_aoo(data):
+    """Add Ark of Osiris battles from data/aoo/ that the old page doesn't have yet (same shapes as track.py).
+
+    data/aoo/aoos.csv lists the battles (columns as the old tracker's aoos.csv), data/aoo/<date>.csv each ranking
+    (rank, governor_id, name, points, kills). Players are matched by Governor ID, so the old page's player order
+    doesn't matter. Once the old page has a battle, its own copy wins and the local one is skipped.
+    """
+    folder = os.path.join(ROOT, 'data', 'aoo')
+    index = os.path.join(folder, 'aoos.csv')
+    if not os.path.exists(index):
+        return []
+    have = {a['s'] for a in data.get('aoos', [])}
+    by_gid = {p['g']: i for i, p in enumerate(data.get('players', [])) if p.get('g')}
+    by_name = {p['n']: i for i, p in enumerate(data.get('players', [])) if not p.get('g')}
+    added = []
+    for ev in sorted(read_csv(index), key=lambda e: e['date']):
+        if ev['date'] in have:
+            continue
+        rows = read_csv(os.path.join(folder, f"{ev['aoo']}.csv"))
+        out = []
+        for r in rows:
+            i = by_gid.get(r['governor_id']) if r['governor_id'] else by_name.get(r['name'])
+            if i is not None:
+                data['players'][i].setdefault('ao', []).append([ev['aoo'], int(r['rank']), int(r['points'])])
+            out.append([int(r['rank']), i, r['name'], int(r['points']), num(r['kills'])])
+        d = datetime.date.fromisoformat(ev['date'])
+        data.setdefault('aoos', []).append(dict(
+            s=ev['date'], l=f"Ark of Osiris {d.day} {d:%b %Y}", tm=ev['team'], op=ev['opponent'], w=ev['result'],
+            sc=[num(ev['score']), num(ev['opponent_score'])], f=ev['final'] == 'yes', nt=ev['note'], r=out))
+        added.append(ev['date'])
+    return added
+
+
 def fetch(url):
     with urllib.request.urlopen(urllib.request.Request(url, headers={'Cache-Control': 'no-cache'}), timeout=60) as r:
         return r.read().decode('utf-8')
@@ -51,6 +95,9 @@ def main():
     data = json.loads(m.group(1))
     for k in DROP:
         data.pop(k, None)
+    added = merge_aoo(data)
+    if added:
+        print('added from data/aoo/:', ', '.join(added))
 
     # the main script waits for the loader: it becomes inert text that web/loader.js runs once DATA is in
     start = m.start()

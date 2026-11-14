@@ -77,6 +77,11 @@ the import, so using the new write paths for real before the switchover makes `-
 `scripts/web/build.py` builds `site/` from the published old dashboard; `web/loader.js` is the Supabase adapter.
 Deployed by `.github/workflows/pages.yml` (push + hourly). Remaining phases: `docs/frontend-plan.md`.
 
+Events processed here instead of in the old tracker: Ark of Osiris battles go in `data/aoo/` (`aoos.csv` row in the
+old tracker's columns + `<date>.csv` = `rank, governor_id, name, points, kills` from the skill's `import_aoo.py`).
+`build.py merge_aoo()` adds each battle the old page lacks (players matched by Governor ID, same shapes as
+`track.py`); if the old page ever has the same date, its copy wins.
+
 ## Plans
 
 Frontend and AI extraction: `docs/frontend-plan.md`.
