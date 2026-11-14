@@ -1,8 +1,10 @@
 # rok-3514-app
 
-New home of the Kingdom 3514 dashboard and ledger: Supabase Postgres in place of the "3514 Fines" Google Sheet + Apps Script, and later an app with AI-assisted imports (upload screenshots and recordings, then preview and submit).
+The Kingdom 3514 dashboard and ledger: **https://rizkyekoputra.github.io/rok-3514-app/**
 
-This repo is the **frontend**: the page, the Supabase ledger and the Pages deploy. [rok-3514](https://github.com/rizkyekoputra/rok-3514) is the **backend**: raw data, importers and `track.py`, which pushes the season data here as `data/season.json`. The old Apps Script ledger and GitHub Pages dashboard keep running until the cutover.
+This repo is the **frontend**: the page, the Supabase ledger (payments, account changes, must-migrate, claims, R4 keys) and the Pages deploy. [rok-3514](https://github.com/rizkyekoputra/rok-3514) is the **backend**: raw data, importers and `track.py`, which pushes the season data here as `data/season.json`.
+
+Cutover done 15 Nov 2026: the "3514 Fines" Google Sheet + Apps Script are a read-only archive, and the old `rok-3514-dashboard` URL redirects here (keeping `?key=` and `#t=`, so old R4 links and mail links still work).
 
 ## Status
 
@@ -11,10 +13,12 @@ This repo is the **frontend**: the page, the Supabase ledger and the Pages deplo
 | Supabase project `gwrqjzqkgvkapjzgktaf` (Singapore) | live |
 | Ledger schema: officers, payments, account changes, must-migrate log, claim status | live (`supabase/migrations/`) |
 | `ledger_get` / `ledger_post`: same JSON as the Apps Script `doGet` / `doPost` | live, tested |
-| Daily one-way copy from the old ledger (`.github/workflows/sync-ledger.yml`) | live; also before every recalc in rok-3514; fails only if something in the old ledger is missing here |
+| One-way copy from the old ledger (`scripts/import/import_ledger.py`) | retired at the cutover; `--write` is locked |
 | Payment claims with proof files (private Storage bucket `claims`, Edge Function `claim-files`, daily cleanup) | live |
 | Dashboard: `web/template.html` + `data/season.json` (from the tracker) + Supabase ledger, on GitHub Pages (`.github/workflows/pages.yml`, on push) | live: https://rizkyekoputra.github.io/rok-3514-app/ |
-| Approvals start the rok-3514 recalc (`ledger.start_recalc()`, pg_net + Vault token `github_recalc_token`) | live once the token is in Vault |
+| Approvals start the rok-3514 recalc (`ledger.start_recalc()`, pg_net + Vault token `github_recalc_token`) | live |
+| R4 key management (`scripts/admin/officers.py`, RPC `ledger_officer_admin`, secret key only) | live |
+| Old dashboard URL redirects here | live |
 | Upload → AI extract → preview → submit | not yet |
 
 ## Security model
@@ -23,22 +27,33 @@ This repo is the **frontend**: the page, the Supabase ledger and the Pages deplo
 - The browser uses the **publishable** key (`supabase.json`, public by design) and can only call:
   - `rpc/ledger_get {p_key}`: public reads; the R4-only parts (`zeroList`, `claimList`) need a valid key.
   - `rpc/ledger_post {req}`: player proposals without a key; every R4 action checks `sha256(key)` against `ledger.officers`.
-- R4 keys are never stored, only their SHA-256. These are the same hashes as the old ledger, so existing R4 links keep working.
+- R4 keys are never stored, only their SHA-256 (the old Sheet's keys were copied as hashes, so existing R4 links keep working).
 - Claim proof files sit in the private bucket `claims` with no Storage policies. The `claim-files` Edge Function
   hands out signed URLs (upload: one file, no overwrite; view: 10 minutes) only after SQL has checked the claim
   token or R4 key. Claim tokens are stored as SHA-256.
-- `rpc/ledger_import` is callable only with the **secret** key. That key lives in `.env` (gitignored) and in the GitHub Actions secrets `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`, never in code or chat.
+- `rpc/ledger_import` and `rpc/ledger_officer_admin` are callable only with the **secret** key. That key lives in `.env` (gitignored) and in this repo's GitHub Actions secrets `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`, never in code or chat.
 
 ## Day to day
 
+Processing (rankings, MGE, AoO, …) happens in rok-3514: `sh tracker/publish.sh` there pulls the ledger, recalculates and
+pushes `data/season.json` here; the site rebuilds in about a minute. The hourly `recalc` Action in rok-3514 does the same,
+and every approval on the dashboard starts it right away.
+
+### R4 keys
+
+Run these yourself, in this folder. `add` and `rotate` print the R4's personal link **once**, in your terminal only: send it
+to them privately. Nobody can show it again (only its SHA-256 is stored), so a lost link means `rotate`.
+
 ```sh
-python3 scripts/import/import_ledger.py            # what the old ledger has
-python3 scripts/import/import_ledger.py --write    # copy it (replaces previously imported rows)
-python3 scripts/import/import_ledger.py --check    # compare new vs old answers
-gh workflow run sync-ledger.yml                    # same, on GitHub
+python3 scripts/admin/officers.py list
+python3 scripts/admin/officers.py add "Exact In-game Name"            # new R4
+python3 scripts/admin/officers.py add "Exact In-game Name" --approver # new approver (decides proposals)
+python3 scripts/admin/officers.py rotate "Exact In-game Name"         # new link; the old one stops working at once
+python3 scripts/admin/officers.py revoke "Exact In-game Name"         # remove an R4 (row kept for history)
+python3 scripts/admin/officers.py approver "Exact In-game Name" on    # or off
 ```
 
-The import replaces only rows marked `imported`. Rows written through the new API are kept.
+Also keep the R4 list in rok-3514 (`tracker/accounts.csv`, role `R4`) in step: that one drives the reports and rewards.
 
 ### Dashboard
 
@@ -79,12 +94,63 @@ supabase db reset && supabase functions serve &   # then:
 python3 scripts/test/test_claims.py
 ```
 
+## Credentials and rotation
+
+Where every key and password lives, and how to replace it. Never paste a secret value into a chat, an issue or a commit.
+
+| Credential | Lives in | Used by | Expires |
+|---|---|---|---|
+| GitHub recalc token (fine-grained PAT) | Supabase Vault `github_recalc_token` | `ledger.start_recalc()`: approvals start rok-3514's `recalc.yml` | **yes**: the date you picked when creating it |
+| Supabase secret key (`sb_secret_…`) | `.env` here + this repo's Actions secrets `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | `officers.py`, `cleanup-claims.yml`, `cleanup_claims.py` | no |
+| Supabase database password | Supabase dashboard (you) | `supabase db push` / `supabase link` (CLI) | no |
+| Supabase publishable key (public) | `supabase.json` | the page, `track.py --pull` | no |
+| App deploy key (SSH, write) | rok-3514-app deploy key "rok-3514 recalc Action" + rok-3514 Actions secret `APP_DEPLOY_KEY` | `publish_app.sh` in the recalc Action pushes `data/season.json` | no |
+| R4 dashboard keys | only with each R4 (DB keeps SHA-256) | `?key=` links | no |
+
+**GitHub recalc token** (do this before it expires; when it has expired, approvals still work but wait for the hourly run):
+1. GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token. Repository access: only
+   `rizkyekoputra/rok-3514`. Permissions: **Actions: Read and write**, nothing else. Note the expiry date.
+2. Supabase dashboard → project rok-dashboard → SQL Editor:
+   ```sql
+   select vault.update_secret((select id from vault.secrets where name = 'github_recalc_token'), 'NEW_TOKEN');
+   -- first time only (no secret yet):  select vault.create_secret('NEW_TOKEN', 'github_recalc_token');
+   ```
+3. Test: `select ledger.start_recalc();`, then a few seconds later
+   `select status_code from net._http_response order by id desc limit 1;` → `204` (and a new "Recalculate dashboard" run
+   in rok-3514's Actions). `401` = wrong token, `403`/`404` = missing permission or repository. Delete the old token on GitHub.
+
+**Supabase secret key**:
+1. Supabase dashboard → Project Settings → API Keys → Secret keys → create a new one.
+2. Put it in `.env` here (`SUPABASE_SERVICE_KEY=…`) and in GitHub: `gh secret set SUPABASE_SERVICE_KEY -R rizkyekoputra/rok-3514-app`
+   (it asks for the value; paste it there, not on the command line).
+3. Check: `python3 scripts/admin/officers.py list` works. Then delete the old secret key in the dashboard.
+
+**Supabase database password** (the CLI asks for it when linking or pushing migrations):
+1. Supabase dashboard → Project Settings → Database → Reset database password. Save it in your password manager.
+2. `supabase link --project-ref gwrqjzqkgvkapjzgktaf` (enter the new password), then
+   `supabase db push --remote --dry-run` should connect.
+
+**Supabase publishable key** (public, rotate only if you want to): create a new publishable key in the dashboard, put it
+in `supabase.json`, push (the site rebuilds; the next recalc uses it), then disable the old one.
+
+**App deploy key** (if it leaks or you want a fresh one):
+```sh
+ssh-keygen -t ed25519 -N '' -C 'rok-3514 recalc -> rok-3514-app' -f /tmp/app_key
+gh repo deploy-key add /tmp/app_key.pub -R rizkyekoputra/rok-3514-app --allow-write -t 'rok-3514 recalc Action'
+gh secret set APP_DEPLOY_KEY -R rizkyekoputra/rok-3514 < /tmp/app_key
+rm /tmp/app_key /tmp/app_key.pub
+gh repo deploy-key list -R rizkyekoputra/rok-3514-app   # then delete the old one: gh repo deploy-key delete <id> -R …
+gh workflow run recalc.yml -R rizkyekoputra/rok-3514    # check it still publishes
+```
+
+**R4 key** (lost or leaked link): `python3 scripts/admin/officers.py rotate "Name"` and send the new link privately.
+
 ## Not copied from the old ledger
 
 The old ledger's public answer is a summary, so these are missing:
 - undo history of payments (only the current state);
 - who zeroed whom (imported zero records say `imported`);
-- claim proof files and amounts (only each fine's latest claim status). Imported claims are not in the R4 claim list
-  and can't be decided here; decide them in the old ledger.
+- claim proof files and amounts (only each fine's latest claim status). All 4 imported claims were already decided
+  (approved) before the cutover; their proof files stay in the old ledger's Google Drive.
 
-What the dashboard shows is identical, and `--check` verifies it.
+What the dashboard shows was identical at the cutover (`--check`).

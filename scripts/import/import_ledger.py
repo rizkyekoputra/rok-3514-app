@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """One-way copy: old ledger (Apps Script web app, public read) -> Supabase ledger.
 
+RETIRED 15 Nov 2026 (cutover): Supabase is the ledger of record and the old Sheet is a read-only archive.
+--write would replace the imported rows with the archive's state (e.g. undo key rotations made with
+scripts/admin/officers.py on imported officers), so it refuses unless LEDGER_IMPORT_AFTER_CUTOVER=1.
+Reading (no flag) and --check are still fine.
+
 Reads only. The old ledger and the old repo (../rok-3514) are never written to.
 
   python3 scripts/import/import_ledger.py            # show what would be imported
@@ -157,6 +162,9 @@ def main():
     unnamed = sum(1 for p in data['payments'] if not p['player']) + sum(1 for a in data['account_changes'] if not a['player'])
     print('old ledger: ' + ', '.join(f'{len(v)} {k}' for k, v in data.items()) +
           (f'; {unnamed} rows without a player name (still imported, matched by id)' if unnamed else ''))
+    if args.write and os.environ.get('LEDGER_IMPORT_AFTER_CUTOVER') != '1':
+        sys.exit('Retired since the cutover (15 Nov 2026): --write would overwrite Supabase with the old Sheet. '
+                 'Set LEDGER_IMPORT_AFTER_CUTOVER=1 only if you really mean to.')
     if args.write:
         print('imported:', rpc(url, skey, 'ledger_import', {'data': data}))
     if args.check or args.write:

@@ -7,8 +7,9 @@ lets players upload proof, have AI extract the details, preview and submit.
 
 Phases 1 and 2 are done in a simpler form: `track.py` (rok-3514, the backend) writes `tracker/season.json` and
 `tracker/publish_app.sh` pushes it here as `data/season.json`; the page is `web/template.html` (the old template,
-patched for Supabase), built by `scripts/web/build.py` on every push. No Vite. Next: `track.py --pull` from Supabase
-instead of the Apps Script, approvals starting the recalc, then the cutover (redirect the old URL, retire the Sheet).
+patched for Supabase), built by `scripts/web/build.py` on every push. No Vite. `track.py --pull` reads Supabase,
+approvals start the recalc, and the cutover is done (15 Nov 2026): old URL redirects here, Sheet retired, R4 keys via
+`scripts/admin/officers.py`. Next: phase 3 (AI extraction).
 
 ## Before (old system)
 
