@@ -73,8 +73,8 @@ Claims test (local only): `supabase db reset`, `supabase functions serve` in the
 ## Old ledger import (retired)
 
 `scripts/import/import_ledger.py` copied the old Sheet into Supabase until the cutover (rows `imported = true`; rows
-written through the API were kept). Reading and `--check` still work; `--write` refuses unless
-`LEDGER_IMPORT_AFTER_CUTOVER=1`, since it would overwrite changes made here since (e.g. rotated R4 keys).
+written through the API were kept). The Apps Script web app was undeployed on 15 Nov 2026, so the script can no longer
+read it (404); `--write` also refuses unless `LEDGER_IMPORT_AFTER_CUTOVER=1`. Kept for reference only.
 
 ## Dashboard
 

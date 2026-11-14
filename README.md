@@ -4,7 +4,7 @@ The Kingdom 3514 dashboard and ledger: **https://rizkyekoputra.github.io/rok-351
 
 This repo is the **frontend**: the page, the Supabase ledger (payments, account changes, must-migrate, claims, R4 keys) and the Pages deploy. [rok-3514](https://github.com/rizkyekoputra/rok-3514) is the **backend**: raw data, importers and `track.py`, which pushes the season data here as `data/season.json`.
 
-Cutover done 15 Nov 2026: the "3514 Fines" Google Sheet + Apps Script are a read-only archive, and the old `rok-3514-dashboard` URL redirects here (keeping `?key=` and `#t=`, so old R4 links and mail links still work).
+Cutover done 15 Nov 2026: the "3514 Fines" Google Sheet is a read-only archive (its Apps Script web app is undeployed), and the old `rok-3514-dashboard` URL redirects here (keeping `?key=` and `#t=`, so old R4 links and mail links still work).
 
 ## Status
 
@@ -13,7 +13,7 @@ Cutover done 15 Nov 2026: the "3514 Fines" Google Sheet + Apps Script are a read
 | Supabase project `gwrqjzqkgvkapjzgktaf` (Singapore) | live |
 | Ledger schema: officers, payments, account changes, must-migrate log, claim status | live (`supabase/migrations/`) |
 | `ledger_get` / `ledger_post`: same JSON as the Apps Script `doGet` / `doPost` | live, tested |
-| One-way copy from the old ledger (`scripts/import/import_ledger.py`) | retired at the cutover; `--write` is locked |
+| One-way copy from the old ledger (`scripts/import/import_ledger.py`) | retired at the cutover; the Apps Script web app is undeployed |
 | Payment claims with proof files (private Storage bucket `claims`, Edge Function `claim-files`, daily cleanup) | live |
 | Dashboard: `web/template.html` + `data/season.json` (from the tracker) + Supabase ledger, on GitHub Pages (`.github/workflows/pages.yml`, on push) | live: https://rizkyekoputra.github.io/rok-3514-app/ |
 | Approvals start the rok-3514 recalc (`ledger.start_recalc()`, pg_net + Vault token `github_recalc_token`) | live |

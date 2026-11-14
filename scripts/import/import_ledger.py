@@ -4,7 +4,7 @@
 RETIRED 15 Nov 2026 (cutover): Supabase is the ledger of record and the old Sheet is a read-only archive.
 --write would replace the imported rows with the archive's state (e.g. undo key rotations made with
 scripts/admin/officers.py on imported officers), so it refuses unless LEDGER_IMPORT_AFTER_CUTOVER=1.
-Reading (no flag) and --check are still fine.
+The web app was undeployed the same day, so reading it now fails (404); kept for reference.
 
 Reads only. The old ledger and the old repo (../rok-3514) are never written to.
 
