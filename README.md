@@ -2,7 +2,7 @@
 
 The Kingdom 3514 dashboard and ledger: **https://rizkyekoputra.github.io/rok-3514-app/**
 
-This repo is the **frontend**: the page, the Supabase ledger (payments, account changes, must-migrate, claims, R4 keys) and the Pages deploy. [rok-3514](https://github.com/rizkyekoputra/rok-3514) is the **backend**: raw data, importers and `track.py`, which pushes the season data here as `data/season.json`.
+This repo is the **frontend**: the page, the Supabase ledger (payments, account changes, must-migrate, claims, R4 keys) and the Pages deploy. [rok-3514](https://github.com/rizkyekoputra/rok-3514) (private) is the **backend**: raw data, importers and `track.py`, which pushes the season data here as `data/season.json`.
 
 Cutover done 15 Nov 2026: the "3514 Fines" Google Sheet is a read-only archive (its Apps Script web app is undeployed), and the old `rok-3514-dashboard` URL redirects here (keeping `?key=` and `#t=`, so old R4 links and mail links still work).
 

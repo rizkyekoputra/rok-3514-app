@@ -7,7 +7,7 @@ Kingdom 3514 (Rise of Kingdoms) dashboard (frontend) + ledger (Supabase Postgres
 
 - **This repo = frontend + ledger.** The page (`web/template.html`, `web/loader.js`), the Supabase ledger
   (migrations, RPCs, Edge Functions) and the Pages deploy. UI changes happen here, in `web/template.html`.
-- **`~/rok-3514` = backend / admin processing.** Raw recordings and screenshots, the importers and `tracker/track.py`
+- **`~/rok-3514` = backend / admin processing** (private repo since 15 Nov 2026; this one stays public for Pages). Raw recordings and screenshots, the importers and `tracker/track.py`
   (the weekly skill in `.claude/skills/rok-weekly`). `track.py` writes `tracker/season.json`; `tracker/publish_app.sh`
   (run by `publish.sh` and the hourly `recalc` Action, deploy key `APP_DEPLOY_KEY`) commits it here as
   `data/season.json`, and the push rebuilds the site. Never hand-edit `data/season.json`; rerun the tracker.

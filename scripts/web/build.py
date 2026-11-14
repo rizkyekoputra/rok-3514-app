@@ -3,7 +3,7 @@
 
   web/template.html  the page (UI lives here); its main script reads window.__DATA and talks to Supabase via LEDGER
   web/loader.js      loads data.json + ledger_get, then runs the main script
-  data/season.json   season data written by the tracker in rok-3514 (track.py -> publish.sh / publish_ci.sh)
+  data/season.json   season data written by the tracker in rok-3514 (track.py -> publish.sh / the recalc Action, via publish_app.sh)
 
 Output:
   site/index.html    template with the main script made inert (web/loader.js runs it once DATA is in)
