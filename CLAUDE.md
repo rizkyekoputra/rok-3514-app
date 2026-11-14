@@ -1,16 +1,19 @@
 # CLAUDE.md
 
-New home of the Kingdom 3514 (Rise of Kingdoms) dashboard + ledger. Supabase Postgres replaces the "3514 Fines"
-Google Sheet + Apps Script; a new frontend will replace the GitHub Pages dashboard. See README.md for status.
+Kingdom 3514 (Rise of Kingdoms) dashboard (frontend) + ledger. Supabase Postgres replaces the "3514 Fines"
+Google Sheet + Apps Script; this dashboard replaces the old GitHub Pages one. See README.md for status.
 
-## Hard rule: the old system is read-only
+## Two repos: frontend here, backend in rok-3514
 
-Until the switchover, the old system keeps running untouched. **Only read from it. Never commit, push, `clasp push`
-or edit there:**
-
-- `~/rok-3514` (tracker/track.py, the weekly skill in `.claude/skills/rok-weekly`)
-- the Apps Script + "3514 Fines" Google Sheet (`~/rok-3514/tracker/fines_ledger/Code.js`)
-- the GitHub Pages dashboard repo `rok-3514-dashboard`
+- **This repo = frontend + ledger.** The page (`web/template.html`, `web/loader.js`), the Supabase ledger
+  (migrations, RPCs, Edge Functions) and the Pages deploy. UI changes happen here, in `web/template.html`.
+- **`~/rok-3514` = backend / admin processing.** Raw recordings and screenshots, the importers and `tracker/track.py`
+  (the weekly skill in `.claude/skills/rok-weekly`). `track.py` writes `tracker/season.json`; `tracker/publish_app.sh`
+  (run by `publish.sh` and the hourly `recalc` Action, deploy key `APP_DEPLOY_KEY`) commits it here as
+  `data/season.json`, and the push rebuilds the site. Never hand-edit `data/season.json`; rerun the tracker.
+- Still on the old stack until the cutover (don't change without the user): the Apps Script + "3514 Fines" Google
+  Sheet (`~/rok-3514/tracker/fines_ledger/Code.js`), which is still the ledger of record and what `track.py --pull`
+  reads, and the old dashboard repo `rok-3514-dashboard`, which `publish.sh` still updates.
 
 `Code.js` is the reference for API behaviour: `ledger_get` / `ledger_post` must answer the same JSON as its
 `doGet` / `doPost`. When porting a feature, read it there and reimplement it here.
@@ -74,13 +77,11 @@ the import, so using the new write paths for real before the switchover makes `-
 
 ## Dashboard
 
-`scripts/web/build.py` builds `site/` from the published old dashboard; `web/loader.js` is the Supabase adapter.
-Deployed by `.github/workflows/pages.yml` (push + hourly). Remaining phases: `docs/frontend-plan.md`.
-
-Events processed here instead of in the old tracker: Ark of Osiris battles go in `data/aoo/` (`aoos.csv` row in the
-old tracker's columns + `<date>.csv` = `rank, governor_id, name, points, kills` from the skill's `import_aoo.py`).
-`build.py merge_aoo()` adds each battle the old page lacks (players matched by Governor ID, same shapes as
-`track.py`); if the old page ever has the same date, its copy wins.
+`scripts/web/build.py` builds `site/` from `web/template.html` + `data/season.json`; `web/loader.js` loads
+`data.json` + `ledger_get` and runs the page's script, with its ledger calls going to Supabase.
+Deployed by `.github/workflows/pages.yml` on every push (so on every new `data/season.json`). The template started as
+a copy of `~/rok-3514/tracker/dashboard_template.html` (14 Nov 2026), already patched for Supabase; that copy now only
+feeds the old dashboard until the cutover, so new UI work goes here only. Remaining phases: `docs/frontend-plan.md`.
 
 ## Plans
 

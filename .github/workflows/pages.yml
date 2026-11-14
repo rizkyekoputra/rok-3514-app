@@ -1,11 +1,9 @@
-# New dashboard on GitHub Pages: rebuilt hourly from the old published dashboard (read-only) into site/index.html +
-# site/data.json, with the ledger served live by Supabase. Nothing is committed; the site is a Pages artifact.
+# Dashboard on GitHub Pages: web/template.html + data/season.json (pushed by the tracker in rok-3514) built into
+# site/index.html + site/data.json; the ledger is served live by Supabase. The site is a Pages artifact, not committed.
 name: Dashboard
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: '35 * * * *'
   workflow_dispatch:
 permissions:
   contents: read

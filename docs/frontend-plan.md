@@ -3,7 +3,14 @@
 Goal: the new dashboard reads `data.json` (static, rebuilt by the tracker) + the Supabase RPCs (live ledger), and later
 lets players upload proof, have AI extract the details, preview and submit.
 
-## Today (old system, read-only for us)
+## Status (14 Nov 2026)
+
+Phases 1 and 2 are done in a simpler form: `track.py` (rok-3514, the backend) writes `tracker/season.json` and
+`tracker/publish_app.sh` pushes it here as `data/season.json`; the page is `web/template.html` (the old template,
+patched for Supabase), built by `scripts/web/build.py` on every push. No Vite. Next: `track.py --pull` from Supabase
+instead of the Apps Script, approvals starting the recalc, then the cutover (redirect the old URL, retire the Sheet).
+
+## Before (old system)
 
 `track.py write_dashboard()` builds one `DATA` object (~690 KB) and inlines it into `dashboard_template.html` →
 `dashboard/index.html` → GitHub Pages (`rok-3514-dashboard`). `DATA` mixes two kinds of things:

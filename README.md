@@ -2,7 +2,7 @@
 
 New home of the Kingdom 3514 dashboard and ledger: Supabase Postgres in place of the "3514 Fines" Google Sheet + Apps Script, and later an app with AI-assisted imports (upload screenshots and recordings, then preview and submit).
 
-The old system ([rok-3514](https://github.com/rizkyekoputra/rok-3514), Apps Script, Sheet, GitHub Pages dashboard) **keeps running unchanged** until the switchover. This repo only reads from it.
+This repo is the **frontend**: the page, the Supabase ledger and the Pages deploy. [rok-3514](https://github.com/rizkyekoputra/rok-3514) is the **backend**: raw data, importers and `track.py`, which pushes the season data here as `data/season.json`. The old Apps Script ledger and GitHub Pages dashboard keep running until the cutover.
 
 ## Status
 
@@ -13,7 +13,7 @@ The old system ([rok-3514](https://github.com/rizkyekoputra/rok-3514), Apps Scri
 | `ledger_get` / `ledger_post`: same JSON as the Apps Script `doGet` / `doPost` | live, tested |
 | Daily one-way copy from the old ledger (`.github/workflows/sync-ledger.yml`) | live; fails the run if the copy differs |
 | Payment claims with proof files (private Storage bucket `claims`, Edge Function `claim-files`, daily cleanup) | live |
-| Dashboard: old page split into `data.json` + Supabase ledger, on GitHub Pages (`.github/workflows/pages.yml`, hourly) | live: https://rizkyekoputra.github.io/rok-3514-app/ |
+| Dashboard: `web/template.html` + `data/season.json` (from the tracker) + Supabase ledger, on GitHub Pages (`.github/workflows/pages.yml`, on push) | live: https://rizkyekoputra.github.io/rok-3514-app/ |
 | Upload → AI extract → preview → submit | not yet |
 
 ## Security model
@@ -42,12 +42,13 @@ The import replaces only rows marked `imported`. Rows written through the new AP
 ### Dashboard
 
 ```sh
-python3 scripts/web/build.py                  # site/ from the published old dashboard (read-only)
+python3 scripts/web/build.py                  # site/ from web/template.html + data/season.json
 python3 -m http.server -d site 8000           # look at it locally (reads the live Supabase ledger)
 ```
 
-`web/loader.js` loads `data.json` + `ledger_get`, then runs the old page's script with its ledger calls routed to
-Supabase. The build fails loudly if a patch no longer matches the old page.
+`data/season.json` comes from the tracker in rok-3514 (`track.py`, then `publish.sh` or the hourly `recalc` Action);
+don't edit it here. `web/loader.js` loads `data.json` + `ledger_get`, then runs the page's script with its ledger
+calls going to Supabase. UI changes go in `web/template.html`.
 
 Every data table has a **Download CSV** button (also `web/loader.js`): exactly the rows and columns shown (search and
 filters applied), as displayed, buttons left out; RFC 4180 quoting, CRLF, UTF-8 BOM for Excel; file name

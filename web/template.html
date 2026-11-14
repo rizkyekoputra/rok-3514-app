@@ -1,0 +1,2311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>3514 Weekly Activity</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f5f2;
+  --surface-1: #fcfcfb;
+  --border: #e3e2dd;
+  --grid: #ecebe7;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #77766f;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --ord-1: #86b6ef; --ord-2: #3987e5; --ord-3: #1c5cab; --ord-4: #0d366b;
+  --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  --chip-bg: #f0efec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #111110; --surface-1: #1a1a19; --border: #2e2e2b; --grid: #262624;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #94938a;
+    --series-1: #3987e5; --series-2: #d95926;
+    --ord-1: #184f95; --ord-2: #2a78d6; --ord-3: #5598e7; --ord-4: #9ec5f4;
+    --chip-bg: #2a2a27;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface-1: #1a1a19; --border: #2e2e2b; --grid: #262624;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #94938a;
+  --series-1: #3987e5; --series-2: #d95926;
+  --ord-1: #184f95; --ord-2: #2a78d6; --ord-3: #5598e7; --ord-4: #9ec5f4;
+  --chip-bg: #2a2a27;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text-primary);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+h1 { font-size: 22px; margin: 0; }
+h2 { font-size: 16px; margin: 0 0 4px; }
+.sub { color: var(--text-secondary); font-size: 13px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-top: 16px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+select, input { font: inherit; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; min-height: 34px; }
+input[type=search] { flex: 1 1 200px; min-width: 0; }
+/* multi-select dropdown (alliance filter) */
+.ms { position: relative; }
+.ms summary { list-style: none; cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 6px 28px 6px 10px;
+  background: var(--surface-1); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; position: relative; }
+.ms summary::-webkit-details-marker { display: none; }
+.ms summary::after { content: "▾"; position: absolute; right: 10px; color: var(--text-secondary); }
+.ms-list { position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; min-width: 260px; max-width: calc(100vw - 32px); max-height: 320px;
+  overflow: auto; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); }
+.ms-list label { display: flex; gap: 8px; align-items: center; padding: 5px 6px; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; }
+.ms-list label:hover { background: var(--chip-bg); }
+.ms-list input { min-height: 0; width: 16px; height: 16px; margin: 0; }
+.ms-list .n { margin-left: auto; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+#allyFind { width: 100%; box-sizing: border-box; margin: 2px 0 4px; }
+.ms-list label[hidden] { display: none; }
+.ms-acts { display: flex; gap: 6px; padding: 2px 2px 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 12px; }
+.calc label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--text-secondary); }
+.calc input { min-width: 0; font-variant-numeric: tabular-nums; }
+.calc-out { margin-top: 12px; line-height: 1.6; }
+.dlg textarea { font: inherit; color: var(--text-primary); background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px; box-sizing: border-box; }
+.dlg h2 { margin-top: 0; }
+.proof { max-width: 100%; max-height: 75vh; display: block; margin: 8px auto 0; border-radius: 8px; }
+.files li { font-size: 13px; }
+.files .bad { color: var(--critical); }
+.rates { width: auto; margin-top: 4px; }
+.rates th, .rates td { cursor: default; padding: 6px 14px 6px 0; }
+.calc .hint { font: inherit; font-size: 12px; text-align: left; padding: 0; margin-top: -2px; border: 0; background: none; color: var(--series-1); cursor: pointer; min-height: 18px; }
+.calc .hint:hover { text-decoration: underline; }
+button.theme { font: inherit; background: none; border: 1px solid var(--border); color: var(--text-secondary);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.tile .v { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.tile .l { color: var(--text-secondary); font-size: 12px; }
+.up { color: var(--good); font-weight: 600; }
+.dn { color: var(--critical); font-weight: 600; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.grid2 .card { margin-top: 0; }
+.charts-row { margin-top: 16px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { fill: var(--text-muted); font-size: 11px; font-family: inherit; }
+svg .lbl { fill: var(--text-secondary); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 2px; font-size: 12px; color: var(--text-secondary); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; }
+.legend i.line { height: 2px; border-radius: 1px; vertical-align: 3px; }
+.legend i.dash { height: 0; border-top: 2px dashed var(--text-muted); background: none !important; vertical-align: 3px; }
+#tip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15); display: none; max-width: 240px; }
+#tip b { display: block; margin-bottom: 2px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px;
+  background: var(--chip-bg); font-size: 12px; color: var(--text-primary); white-space: nowrap; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+.player-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 8px; }
+.player-head .name { font-size: 18px; font-weight: 650; }
+.muted { color: var(--text-muted); }
+.table-wrap { overflow-x: auto; margin-top: 8px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; user-select: none; }
+th.num, td.num { text-align: right; }
+/* only these lists open the player pop-up (see the row click handler) */
+:is(#tbody, #rosterBody, #kvkBody, #migBody, #migOutBody) tr { cursor: pointer; }
+:is(#tbody, #rosterBody, #kvkBody, #migBody, #migOutBody) tr:hover { background: var(--chip-bg); }
+.acts { display: flex; flex-wrap: wrap; gap: 4px; }
+td .acts { flex-wrap: nowrap; }
+button.act.warn { background: none; color: var(--critical); border-color: var(--critical); }
+.below { color: var(--critical); font-weight: 600; }
+.below::after { content: " ▼"; font-size: 10px; }
+.empty { color: var(--text-muted); padding: 24px 0; text-align: center; }
+.officer { margin-top: 12px; padding: 8px 12px; border-radius: 8px; background: var(--chip-bg); font-size: 13px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.officer[hidden] { display: none; }
+.officer.bad { color: var(--critical); }
+button.act { font: inherit; font-size: 12px; border-radius: 6px; padding: 4px 10px; cursor: pointer;
+  border: 1px solid var(--series-1); background: var(--series-1); color: #fff; }
+button.act.ghost { background: none; color: var(--text-secondary); border-color: var(--border); }
+button.act:disabled { opacity: .5; cursor: wait; }
+.bulk { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;
+  padding: 8px 12px; border-radius: 8px; background: var(--chip-bg); border: 1px solid var(--border); font-size: 13px; }
+.bulk[hidden] { display: none; }
+td.sel, th.sel { width: 28px; padding-right: 0; }
+td.sel input, th.sel input { min-height: 0; width: 16px; height: 16px; cursor: pointer; }
+#finesBody tr:not([data-i]) { cursor: default; }
+.paid { color: var(--good); font-weight: 600; }
+.gate { display: none; }
+body.gating main { display: none; }
+body.gating .gate { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  min-height: 100vh; color: var(--text-secondary); }
+.spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--series-1);
+  animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.tabs { display: flex; gap: 2px; margin-top: 16px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.tabs button { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px;
+  color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.tabs button.on { color: var(--text-primary); border-bottom-color: var(--series-1); font-weight: 600; }
+.tabs button[hidden] { display: none; }
+.badge { display: inline-block; min-width: 18px; padding: 0 6px; border-radius: 999px; background: var(--series-1);
+  color: #fff; font-size: 11px; line-height: 18px; text-align: center; }
+.badge:empty { display: none; }
+#playerDlg { width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 16px 18px 20px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-1); color: var(--text-primary); }
+.dlg { width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 16px 18px 20px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-1); color: var(--text-primary); }
+.dlg::backdrop, #playerDlg::backdrop { background: rgba(0, 0, 0, .35); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.p-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--text-secondary); font-size: 13px; }
+.p-sec { margin: 16px 0 6px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-muted); }
+.p-sec .muted { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.stat .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat .l { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.stat.bad .v { color: var(--critical); }
+.stat.good .v { color: var(--good); }
+.stat .v .muted { font-size: 14px; font-weight: 400; }
+.hints { display: flex; flex-wrap: wrap; gap: 6px; }
+.names { display: grid; gap: 6px; }
+.nm { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; padding: 7px 12px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+.nm .n { font-weight: 600; }
+.nm.old .n { font-weight: 400; color: var(--text-secondary); }
+.nm .when { font-size: 12px; color: var(--text-muted); }
+.kv { width: 100%; font-size: 13px; }
+.kv td, .kv th { padding: 6px 8px; }
+.pct-good { color: var(--good); font-weight: 600; }
+.pct-bad { color: var(--critical); font-weight: 600; }
+.dlg-close { float: right; font: inherit; font-size: 16px; line-height: 1; background: none; border: 1px solid var(--border);
+  color: var(--text-secondary); border-radius: 6px; padding: 6px 9px; cursor: pointer; margin: 0 0 8px 8px; }
+#playerDlg .player-head { margin-top: 0; }
+#playerDlg .grid2 { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+#playerDlg .stats { grid-template-columns: repeat(auto-fit, minmax(min(140px, 40%), 1fr)); }
+@media (max-width: 600px) { #playerDlg { width: calc(100vw - 16px); max-width: none; padding: 12px; } }
+footer { margin-top: 24px; color: var(--text-muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<script>if (/[?&]key=/.test(location.search)) document.body.classList.add('gating');  // no flash of the read-only page</script>
+<div class="gate"><div class="spin"></div><div>Checking your R4 link…</div></div>
+<main>
+  <header>
+    <div>
+      <h1>Kingdom 3514</h1>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <button class="theme" id="themeBtn" type="button">Theme</button>
+  </header>
+  <div class="officer" id="officerBar" hidden></div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="players" type="button">Players</button>
+    <button data-tab="activity" type="button">Weekly activity</button>
+    <button data-tab="fines" type="button">Fines</button>
+    <button data-tab="migrate" type="button">Must migrate <span class="badge" id="migCount"></span></button>
+    <button data-tab="mge" id="mgeTabBtn" type="button">MGE</button>
+    <button data-tab="gh" type="button">20 GH</button>
+    <button data-tab="canyon" type="button">Canyon Clash</button>
+    <button data-tab="aoo" type="button">Ark of Osiris</button>
+    <button data-tab="power" type="button">CH25 power</button>
+    <button data-tab="roster" id="rosterTabBtn" type="button" hidden>KvK roster</button>
+    <button data-tab="kvk" type="button">KvK history</button>
+    <button data-tab="review" id="reviewTabBtn" type="button" hidden>Review <span class="badge" id="reviewCount"></span></button>
+  </nav>
+
+  <section data-panel="players" hidden>
+    <div class="card">
+      <h2>Master list</h2>
+      <div class="sub" id="rosterSub"></div>
+      <div class="controls">
+        <input type="search" id="rosterSearch" placeholder="Search name or ID, also past names and governors who left…" autocomplete="off">
+        <details class="ms" id="allyMs">
+          <summary id="allySum">All alliances</summary>
+          <div class="ms-list">
+            <div class="ms-acts"><button class="act ghost" id="allyAll" type="button">All alliances</button>
+              <button class="act ghost" id="allyMain" type="button">Only main alliance</button></div>
+            <input type="search" id="allyFind" placeholder="Find alliance…" autocomplete="off">
+            <div id="allyList"></div>
+            <div class="sub" id="allyNone" hidden style="padding:6px">No alliance matches.</div>
+          </div>
+        </details>
+        <select id="rosterCh" title="City hall level">
+          <option value="all">Any CH</option>
+          <option value="25">CH25</option>
+          <option value="below">Not CH25 / unknown</option>
+        </select>
+        <select id="rosterType">
+          <option value="all">Any type</option>
+          <option value="main">Main accounts</option>
+          <option value="farm">Farms</option>
+          <option value="review">Needs review</option>
+          <option value="likely">Likely farm</option>
+          <option value="left">Not in the kingdom now</option>
+        </select>
+      </div>
+      <div class="tiles" id="rosterTiles"></div>
+      <div class="bulk" id="bulkBar" hidden></div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th class="sel" id="rosterSelTh" hidden><input type="checkbox" id="rosterAll" aria-label="Select all shown"></th>
+          <th data-rk="n">Player</th><th data-rk="g">ID</th><th data-rk="a">Alliance</th>
+          <th class="num" data-rk="ch" title="City hall level (from the CH25 roster; – = not on it)">CH</th>
+          <th class="num" data-rk="pw">Power</th><th class="num" data-rk="kp">Kill points</th>
+          <th data-rk="t">Type</th><th>Status</th><th id="rosterActTh" hidden></th>
+        </tr></thead>
+        <tbody id="rosterBody"></tbody>
+      </table></div>
+      <div class="sub" id="rosterCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="activity" hidden>
+    <div class="card" data-calc-card="fort"></div>
+    <div class="controls">
+      <label class="sub" for="weekSel">Week</label>
+      <select id="weekSel"></select>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="grid2 charts-row">
+      <div class="card">
+        <h2>Main accounts meeting the minimum</h2>
+        <div class="sub">Share of main accounts in the alliance ranking, per week</div>
+        <div class="legend"><span><i class="line" style="background:var(--series-1)"></i>Forts</span><span><i class="line" style="background:var(--series-2)"></i>Tech</span></div>
+        <div id="passChart"></div>
+      </div>
+      <div class="card">
+        <h2>Fort offenses per week</h2>
+        <div class="sub">Main accounts below the fort minimum, by offense number</div>
+        <div class="legend" id="offLegend"></div>
+        <div id="offChart"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Players in the alliance ranking</h2>
+      <div class="controls">
+        <input type="search" id="tableSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="typeSel">
+          <option value="main">Main accounts</option>
+          <option value="farm">Farms</option>
+          <option value="all">All</option>
+        </select>
+        <select id="offSel">
+          <option value="all">Any status</option>
+          <option value="fail">Below fort minimum</option>
+          <option value="tech">Below tech minimum</option>
+          <option value="2">Fined (2nd offense +)</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th data-k="n">Player</th><th data-k="t">Type</th>
+          <th class="num" data-k="f">Forts</th><th class="num" data-k="x">Tech</th>
+          <th data-k="o">Status</th><th class="num" data-k="d">Fine owed</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+      <div class="sub" id="tableCount"></div>
+    </div>
+
+  </section>
+
+  <section data-panel="fines" hidden>
+    <div class="card" data-calc-card="all"></div>
+    <div class="card" id="claimsCard" hidden>
+      <h2>Payment claims</h2>
+      <div class="sub">Players who say they paid, with their proof. Check the bank KD first, then approve (records the payment)
+        or reject (the player sees your reason and can send again). Proof files are deleted 30 days after a decision.</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th>Fine for</th><th>Sent</th><th>Proof</th><th>Note</th><th>Sent on</th><th></th></tr></thead>
+        <tbody id="claimsBody"></tbody>
+      </table></div>
+    </div>
+
+    <div class="card" id="finesCard">
+      <h2>Fines</h2>
+      <div class="sub" id="finesSub">Fines and whether they have been paid. Amounts are in gold; you can also pay in food, wood or stone, or a mix (see the calculator above).</div>
+      <div class="controls">
+        <input type="search" id="finesSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="finesSel">
+          <option value="unpaid">Unpaid</option>
+          <option value="paid">Paid</option>
+          <option value="all">All fines</option>
+        </select>
+        <select id="finesEv"></select>
+        <select id="finesOff"></select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Player</th><th id="finesActTh" hidden></th><th>Fine for</th><th class="num">Reason</th><th class="num">Fine (gold)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="finesBody"></tbody>
+      </table></div>
+      <div class="sub" id="finesCount"></div>
+    </div>
+
+  </section>
+
+  <section data-panel="migrate" hidden>
+    <div class="tiles" id="migTiles"></div>
+    <div class="card">
+      <h2>Must migrate</h2>
+      <div class="sub" id="migSub"></div>
+      <div class="controls">
+        <input type="search" id="migSearch" placeholder="Filter by name or ID…" autocomplete="off">
+        <select id="migShow">
+          <option value="all">Everyone on the list</option>
+          <option value="auto">4th offense</option>
+          <option value="manual">Marked by an R4</option>
+          <option value="zeroed">Zeroed at least once</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th id="migActTh" hidden></th><th>ID</th><th>Why</th>
+          <th class="num" title="Forts in the latest week (0 = not in the alliance ranking)">Forts</th><th class="num">Unpaid fines</th><th class="num">Times zeroed</th><th>Last zeroed</th></tr></thead>
+        <tbody id="migBody"></tbody>
+      </table></div>
+      <div class="sub" id="migListCount"></div>
+    </div>
+    <div class="card">
+      <h2>Migrated out</h2>
+      <div class="sub">Marked by an R4 once the account left Kingdom 3514, or shown emigrating in the in-game Immigration Log. They are left out of the must-migrate list and the weekly zero-fill.</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th id="migOutActTh" hidden></th><th>ID</th><th>Marked by</th><th>When</th><th class="num">Times zeroed</th></tr></thead>
+        <tbody id="migOutBody"></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h2>Immigration log</h2>
+      <div class="sub" id="immSub"></div>
+      <div class="controls">
+        <input type="search" id="immSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="immShow">
+          <option value="all">Everyone</option>
+          <option value="out">Emigrated out</option>
+          <option value="in">Entered the kingdom</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date (UTC)</th><th>Player</th><th>Name in the log</th><th>Event</th></tr></thead>
+        <tbody id="immBody"></tbody>
+      </table></div>
+      <div class="sub" id="immCount"></div>
+    </div>
+    <div class="card" id="zeroCard" hidden>
+      <h2>Zero log</h2>
+      <div class="sub">Every zero recorded, newest first, with the R4 who recorded it. Only R4s see who did it; players see the count.</div>
+      <div class="hints" id="zeroByOfficer" style="margin-top:10px"></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>When</th><th>Player</th><th>Recorded by</th><th>Note</th><th></th></tr></thead>
+        <tbody id="zeroBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section data-panel="mge" hidden>
+    <div class="card" data-calc-card="mge" id="mgeCalc"></div>
+    <div class="controls">
+      <label class="sub" for="mgeSel">Event</label>
+      <select id="mgeSel"></select>
+    </div>
+    <div class="tiles" id="mgeTiles"></div>
+    <div class="card" id="mgeRankCard">
+      <h2>Ranking</h2>
+      <div class="sub" id="mgeSub"></div>
+      <div class="controls">
+        <input type="search" id="mgeSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="mgeShow">
+          <option value="all">Everyone captured</option>
+          <option value="over">Over the limit</option>
+          <option value="slots">Top-10 slots</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th class="num">Rank</th><th>Player</th><th>Slot</th><th class="num">Limit</th><th class="num">Points</th>
+          <th class="num">Over</th><th class="num">Fine (gold)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="mgeBody"></tbody>
+      </table></div>
+      <div class="sub" id="mgeCount"></div>
+    </div>
+    <div class="card mgh" hidden>
+      <h2>History's Mightiest Governors</h2>
+      <div class="sub">Top 10 of each past MGE season, from the in-game history. Alliance tags and names as they were then; for reference only, no limits or fines.</div>
+      <div class="controls">
+        <select id="mghSel"></select>
+        <input type="search" id="mghSearch" placeholder="Filter by name…" autocomplete="off">
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Season</th><th class="num">Rank</th><th>Player</th><th>Alliance then</th><th class="num">Points</th></tr></thead>
+        <tbody id="mghBody"></tbody>
+      </table></div>
+      <div class="sub" id="mghCount"></div>
+    </div>
+    <div class="card mgh" hidden>
+      <h2>Most top-10 finishes</h2>
+      <div class="sub" id="mghTopSub"></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th class="num">Top 10</th><th class="num">1st</th><th class="num">Best rank</th><th class="num">Most points</th><th>Seasons</th></tr></thead>
+        <tbody id="mghTopBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section data-panel="gh" hidden>
+    <div class="card" data-calc-card="gh"></div>
+    <div class="controls">
+      <label class="sub" for="ghSel">Event</label>
+      <select id="ghSel"></select>
+    </div>
+    <div class="tiles" id="ghTiles"></div>
+    <div class="card">
+      <h2>Ranking</h2>
+      <div class="sub" id="ghSub"></div>
+      <div class="controls">
+        <input type="search" id="ghSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="ghShow">
+          <option value="all">Everyone captured</option>
+          <option value="over">Over the limit</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th class="num">Rank</th><th>Player</th><th>Alliance</th><th class="num">Limit</th><th class="num">Points</th>
+          <th class="num">Over</th><th class="num">Fine (gold)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="ghBody"></tbody>
+      </table></div>
+      <div class="sub" id="ghCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="canyon" hidden>
+    <div class="controls">
+      <label class="sub" for="ccSel">Event</label>
+      <select id="ccSel"></select>
+    </div>
+    <div class="tiles" id="ccTiles"></div>
+    <div class="card">
+      <h2>Combat statistics</h2>
+      <div class="sub" id="ccSub"></div>
+      <div class="controls">
+        <input type="search" id="ccSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="ccShow">
+          <option value="all">Everyone</option>
+          <option value="full">Used all attacks</option>
+          <option value="missed">Did not use all attacks</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th class="num">#</th><th>Player</th><th class="num">Defenses</th><th class="num">Attacks</th><th>Status</th></tr></thead>
+        <tbody id="ccBody"></tbody>
+      </table></div>
+      <div class="sub" id="ccCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="power" hidden>
+    <div class="controls">
+      <label class="sub" for="pwFrom">From</label><select id="pwFrom"></select>
+      <label class="sub" for="pwTo">to</label><select id="pwTo"></select>
+    </div>
+    <div class="tiles" id="pwTiles"></div>
+    <div class="card">
+      <h2 id="pwTitle">Total power by member export</h2>
+      <div class="sub" id="pwSub"></div>
+      <div class="legend"><span><i class="line" style="background:var(--series-1)"></i><span id="pwL1"></span></span><span><i class="line" style="background:var(--series-2)"></i><span id="pwL2"></span></span></div>
+      <div id="pwChart"></div>
+    </div>
+    <div class="grid2 charts-row">
+      <div class="card">
+        <h2>Where the change came from</h2>
+        <div class="sub" id="pwBridgeSub"></div>
+        <div id="pwBridge"></div>
+      </div>
+      <div class="card">
+        <h2>Per export</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Export</th><th class="num" id="pwThN"></th><th class="num" id="pwThT"></th><th class="num">Change</th><th class="num" id="pwThA"></th></tr></thead>
+          <tbody id="pwExBody"></tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Governors</h2>
+      <div class="sub" id="pwGovSub"></div>
+      <div class="controls">
+        <input type="search" id="pwSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="pwShow">
+          <option value="all">Everyone</option>
+          <option value="down">Power went down</option>
+          <option value="up">Power went up</option>
+          <option value="left">Left the kingdom</option>
+          <option value="joined">Joined the kingdom</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th class="num" id="pwThFrom"></th><th class="num" id="pwThTo"></th><th class="num">Change</th><th>Status</th></tr></thead>
+        <tbody id="pwBody"></tbody>
+      </table></div>
+      <div class="sub" id="pwCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="roster" hidden>
+    <div class="controls">
+      <label class="sub" for="krSel">KvK</label><select id="krSel"></select>
+    </div>
+    <div class="tiles" id="krTiles"></div>
+    <div class="card">
+      <h2>Alliances</h2>
+      <div class="sub" id="krAllySub"></div>
+      <div id="krChart"></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Alliance</th><th class="num">Governors</th><th class="num">Total power</th><th class="num">Share</th><th class="num">Average</th><th class="num">Strongest</th></tr></thead>
+        <tbody id="krAllyBody"></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h2>Roster</h2>
+      <div class="sub" id="krSub"></div>
+      <div class="controls">
+        <input type="search" id="krSearch" placeholder="Filter by name or ID…" autocomplete="off">
+        <select id="krAlly"></select>
+        <select id="krType">
+          <option value="all">Mains and farms</option>
+          <option value="main">Mains</option>
+          <option value="farm">Farms</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th class="num">#</th><th>Player</th><th>Alliance</th><th>Rank</th><th>Type</th><th class="num">Roster power</th><th class="num">Power now</th></tr></thead>
+        <tbody id="krBody"></tbody>
+      </table></div>
+      <div class="sub" id="krCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="aoo" hidden>
+    <div class="controls">
+      <label class="sub" for="aooSel">Battle</label>
+      <select id="aooSel"></select>
+    </div>
+    <div class="tiles" id="aooTiles"></div>
+    <div class="card">
+      <h2>Participation</h2>
+      <div class="sub" id="aooSub"></div>
+      <div class="controls">
+        <input type="search" id="aooSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="aooShow">
+          <option value="all">Everyone registered</option>
+          <option value="none">Did not participate</option>
+          <option value="low">Warning: low points</option>
+          <option value="ok">OK</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th class="num">Rank</th><th>Player</th><th class="num">Points</th><th class="num">Kills</th><th>Status</th></tr></thead>
+        <tbody id="aooBody"></tbody>
+      </table></div>
+      <div class="sub" id="aooCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="kvk" hidden>
+    <div class="card">
+      <h2>KvK history</h2>
+      <div class="sub" id="kvkSub"></div>
+      <div class="controls">
+        <select id="kvkSel"></select>
+        <input type="search" id="kvkSearch" placeholder="Filter by name or ID…" autocomplete="off">
+        <select id="kvkHere">
+          <option value="all">Everyone</option>
+          <option value="in">In kingdom</option>
+          <option value="out">Not in the kingdom now</option>
+        </select>
+        <select id="kvkType">
+          <option value="all">Main and farm</option>
+          <option value="main">Main accounts</option>
+          <option value="farm">Farms</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr id="kvkHead"></tr></thead>
+        <tbody id="kvkBody"></tbody>
+      </table></div>
+      <div class="sub" id="kvkCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="review" hidden>
+    <div class="card">
+      <h2>Waiting for approval</h2>
+      <div class="sub">Farm/main changes proposed by R4s and players. Any R4 can decide a player's suggestion; R4 proposals need an approver (or the admin in the sheet). Every decision records who made it; after an approval every week is recalculated.</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th id="pendActTh" hidden></th><th>Change</th><th>Proposed by</th><th>When</th></tr></thead>
+        <tbody id="pendBody"></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h2>Accounts to check</h2>
+      <div class="sub">Unconfirmed accounts in the alliance or its rankings, likely farms first. Hints are only hints: check in game before proposing.</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Player</th><th></th><th>Now</th><th class="num">Power</th><th class="num">Kill points</th><th>Hints</th></tr></thead>
+        <tbody id="queueBody"></tbody>
+      </table></div>
+      <div class="sub" id="queueCount"></div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+</main>
+<dialog id="playerDlg" aria-label="Player details">
+  <button class="dlg-close" id="dlgClose" type="button" aria-label="Close">✕</button>
+  <div id="playerView"></div>
+</dialog>
+<dialog id="claimDlg" class="dlg" aria-label="Send payment proof">
+  <button class="dlg-close" data-close type="button" aria-label="Close">✕</button>
+  <div id="claimView"></div>
+</dialog>
+<dialog id="payDlg" class="dlg" aria-label="Record payment">
+  <button class="dlg-close" data-close type="button" aria-label="Close">✕</button>
+  <div id="payView"></div>
+</dialog>
+<dialog id="suggestDlg" class="dlg" aria-label="Suggest account type">
+  <button class="dlg-close" data-close type="button" aria-label="Close">✕</button>
+  <div id="suggestView"></div>
+</dialog>
+<dialog id="fileDlg" class="dlg" aria-label="Proof file">
+  <button class="dlg-close" data-close type="button" aria-label="Close">✕</button>
+  <div id="fileView"></div>
+</dialog>
+<div id="tip"></div>
+
+<script>
+const DATA = window.__DATA;
+const $ = id => document.getElementById(id);
+const fmt = n => n == null ? '–' : n.toLocaleString('en-US');
+const gold = n => !n ? '–' : n >= 1e9 ? (n / 1e9).toFixed(n % 1e9 ? 2 : 0) + 'B' : (n / 1e6).toLocaleString('en-US', {maximumFractionDigits: 1}) + 'M';
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function weekLabel(wk) {
+  const s = new Date(wk + 'T00:00:00Z'), e = new Date(s.getTime() + 6 * 864e5);
+  return s.getUTCMonth() === e.getUTCMonth()
+    ? `${s.getUTCDate()}–${e.getUTCDate()} ${MON[s.getUTCMonth()]}`
+    : `${s.getUTCDate()} ${MON[s.getUTCMonth()]}–${e.getUTCDate()} ${MON[e.getUTCMonth()]}`;
+}
+const OFF = [
+  {label: 'OK', color: 'var(--good)', icon: '✓'},
+  {label: '1st offense', color: 'var(--warning)', icon: '!'},
+  {label: '2nd offense', color: 'var(--serious)', icon: '!!'},
+  {label: '3rd offense', color: 'var(--critical)', icon: '!!!'},
+  {label: 'Must migrate', color: 'var(--critical)', icon: '✕'},
+];
+function chip(o, isFarm) {
+  if (isFarm) return '<span class="chip muted">Farm · no penalty</span>';
+  const s = OFF[Math.min(o, 4)];
+  return `<span class="chip"><span class="dot" style="background:${s.color}"></span>${s.icon} ${s.label}</span>`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---------- tooltip ----------
+const tip = $('tip');
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.style.display = 'block';
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => { tip.style.display = 'none'; };
+
+// ---------- charts ----------
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p;
+  return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+}
+function frame(container, H, yMax, yFmt) {
+  container.innerHTML = '';
+  const W = Math.max(260, container.clientWidth || 520), m = {t: 12, r: 64, b: 26, l: 44};
+  const svg = el('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img'}, container);
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const y = v => m.t + ih - (v / yMax) * ih;
+  for (let i = 0; i <= 4; i++) {
+    const v = yMax * i / 4, yy = y(v);
+    el('line', {x1: m.l, x2: m.l + iw, y1: yy, y2: yy, stroke: 'var(--grid)', 'stroke-width': 1}, svg);
+    el('text', {x: m.l - 6, y: yy + 4, 'text-anchor': 'end'}, svg).textContent = yFmt(v);
+  }
+  return {svg, W, H, m, iw, ih, y};
+}
+// line chart: one x per week, series [{name, color, values}], optional threshold line
+function lineChart(container, weeks, series, o = {}) {
+  const all = series.flatMap(s => s.values).filter(v => v != null).concat(o.threshold || 0);
+  const yMax = o.yMax || niceMax(Math.max(...all) * 1.1);
+  const f = frame(container, o.height || 220, yMax, o.yFmt || fmt);
+  const {svg, m, iw, ih, y} = f;
+  const step = weeks.length > 1 ? iw / (weeks.length - 1) : 0;
+  const x = i => weeks.length > 1 ? m.l + i * step : m.l + iw / 2;
+  const every = Math.max(1, Math.ceil(weeks.length * 64 / iw));
+  weeks.forEach((w, i) => {
+    if ((weeks.length - 1 - i) % every === 0) el('text', {x: x(i), y: m.t + ih + 18, 'text-anchor': 'middle'}, svg).textContent = weekLabel(w);
+  });
+  if (o.threshold != null) {
+    el('line', {x1: m.l, x2: m.l + iw, y1: y(o.threshold), y2: y(o.threshold), stroke: 'var(--text-muted)',
+      'stroke-width': 1.5, 'stroke-dasharray': '5 4'}, svg);
+    el('text', {x: m.l + iw + 6, y: y(o.threshold) + 4, class: 'lbl'}, svg).textContent = 'min ' + o.yFmtShort(o.threshold);
+  }
+  const labels = [];
+  series.forEach(s => {
+    const pts = s.values.map((v, i) => v == null ? null : [x(i), y(v)]);
+    let d = '', pen = false;
+    pts.forEach(p => { if (!p) { pen = false; return; } d += (pen ? 'L' : 'M') + p[0] + ' ' + p[1]; pen = true; });
+    el('path', {d, fill: 'none', stroke: s.color, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, svg);
+    pts.forEach(p => p && el('circle', {cx: p[0], cy: p[1], r: 4, fill: s.color, stroke: 'var(--surface-1)', 'stroke-width': 2}, svg));
+    const li = s.values.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
+    if (o.directLabels && li != null && li >= 0) labels.push({x: x(li) + 8, y: y(s.values[li]) + 4, t: s.name});
+  });
+  labels.sort((a, b) => a.y - b.y).forEach((l, i, arr) => {  // keep end labels 13px apart
+    if (i && l.y - arr[i - 1].y < 13) l.y = arr[i - 1].y + 13;
+    el('text', {x: l.x, y: l.y, class: 'lbl'}, svg).textContent = l.t;
+  });
+  // hover: crosshair + tooltip on the nearest week
+  const cross = el('line', {y1: m.t, y2: m.t + ih, stroke: 'var(--text-muted)', 'stroke-width': 1, visibility: 'hidden'}, svg);
+  const hit = el('rect', {x: m.l - 20, y: m.t, width: iw + 40, height: ih, fill: 'transparent'}, svg);
+  const pick = ev => {
+    const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * f.W / r.width;
+    return weeks.length > 1 ? Math.max(0, Math.min(weeks.length - 1, Math.round((px - m.l) / step))) : 0;
+  };
+  hit.addEventListener('pointermove', ev => {
+    const i = pick(ev);
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+    showTip(`<b>${weekLabel(weeks[i])}</b>` + series.map(s =>
+      `<span style="color:${s.color}">●</span> ${esc(s.name)}: ${s.values[i] == null ? (o.nullFor ? o.nullFor(i) : o.nullTxt || 'not in ranking') : o.tipFmt(s.values[i])}`).join('<br>'), ev);
+  });
+  hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); hideTip(); });
+}
+// stacked bars: stacks [{name, color, values}] bottom to top
+function stackChart(container, weeks, stacks, o = {}) {
+  const totals = weeks.map((_, i) => stacks.reduce((a, s) => a + s.values[i], 0));
+  const yMax = Math.max(4, Math.ceil(Math.max(...totals, 1) * 1.15 / 4) * 4);
+  const f = frame(container, 220, yMax, v => Math.round(v));
+  const {svg, m, iw, ih, y} = f;
+  const band = iw / weeks.length, bw = Math.min(56, band * 0.5);
+  weeks.forEach((w, i) => {
+    const cx = m.l + band * i + band / 2;
+    el('text', {x: cx, y: m.t + ih + 18, 'text-anchor': 'middle'}, svg).textContent = weekLabel(w);
+    let base = 0;
+    const segs = stacks.map(s => ({s, v: s.values[i]})).filter(z => z.v > 0);
+    segs.forEach((z, j) => {
+      const top = j === segs.length - 1;
+      const y0 = y(base), y1 = y(base + z.v), hgt = y0 - y1 - (top ? 0 : 2);
+      const r = top ? Math.min(4, hgt) : 0;
+      const d = `M${cx - bw / 2} ${y0} V${y1 + r} Q${cx - bw / 2} ${y1} ${cx - bw / 2 + r} ${y1} H${cx + bw / 2 - r} Q${cx + bw / 2} ${y1} ${cx + bw / 2} ${y1 + r} V${y0} Z`;
+      const seg = el('path', {d, fill: z.s.color}, svg);
+      if (!top) seg.setAttribute('d', `M${cx - bw / 2} ${y0} V${y1 + 2} H${cx + bw / 2} V${y0} Z`);
+      base += z.v;
+    });
+    if (totals[i]) el('text', {x: cx, y: y(totals[i]) - 6, 'text-anchor': 'middle', class: 'lbl'}, svg).textContent = totals[i];
+    const hit = el('rect', {x: cx - band / 2, y: m.t, width: band, height: ih, fill: 'transparent'}, svg);
+    hit.addEventListener('pointermove', ev => showTip(`<b>${weekLabel(w)}</b>` +
+      stacks.map(s => `<span style="color:${s.color}">■</span> ${s.name}: ${s.values[i]}`).join('<br>') +
+      `<br>Total: ${totals[i]}` + (o.note ? o.note(i) : ''), ev));
+    hit.addEventListener('pointerleave', hideTip);
+  });
+}
+
+// ---------- state ----------
+const weeks = DATA.weeks, P = DATA.players;
+const seen = wk => P.filter(p => p.w[wk]).length;
+const maxSeen = Math.max(...weeks.map(seen));
+const partial = wk => seen(wk) < 0.9 * maxSeen;  // screenshots didn't cover the whole ranking
+let week = weeks[weeks.length - 1], sortK = 'f', sortDir = -1, current = null;
+const isFarm = p => p.t === 'farm';
+const typeTxt = p => isFarm(p) ? 'Farm' : 'Main';  // type is only Main/Farm; R4/R5 is a role, shown separately
+const short = n => n == null ? '–' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n);
+const dayLabel = d => d ? `${+d.slice(8)} ${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}` : '';
+const hasWeeks = p => weeks.some(w => p.w[w]);
+const monthLabel = d => d ? `${MON[+d.slice(5, 7) - 1]} ${d.slice(0, 4)}` : '';
+const KVK = Object.fromEntries((DATA.kvks || []).map(k => [k.k, k]));
+const kvkWhen = n => KVK[n] ? (KVK[n].e ? '≈ ' : '') + monthLabel(KVK[n].d) : '';
+const pctCell = v => v == null ? '<span class="muted">–</span>' : `<span class="${v >= 100 ? 'pct-good' : 'pct-bad'}">${Math.round(v)}%</span>`;
+// KvKs without a target (KvK 9) show "No target" instead of a %
+const kvPct = r => r[2] == null && r[3] == null ? '<span class="muted">No target</span>' : pctCell(r[3]);
+// a KvK record: [kvk, value, target, pct, fine, status, type, name then]
+const kvResult = r => r[1] == null ? '–' : short(r[1]) + (r[2] ? ` <span class="muted">/ ${short(r[2])}</span>` : '');
+const kvNote = r => [r[4] ? `fine ${gold(r[4])}` : '', r[2] != null || r[3] != null ? r[5] : ''].filter(Boolean).map(esc).join(' · ');
+const strong = p => (p.h || []).some(h => !h.startsWith('Low kill'));  // a name/alliance hint, not just low kill points
+const inQueue = p => !p.c && !p.r && (p.a === DATA.mainAlly || hasWeeks(p));
+
+function renderTiles() {
+  const rows = P.filter(p => p.w[week] && !isFarm(p)).map(p => p.w[week]);
+  const techRows = rows.filter(w => w.x != null);
+  const passF = rows.filter(w => w.f >= DATA.minF).length, passT = techRows.filter(w => w.x >= DATA.minT).length;
+  const fined = rows.filter(w => w.o >= 2);
+  const tiles = [
+    [`${passF}/${rows.length}`, `Main accounts with ${DATA.minF}+ forts`],
+    [techRows.length ? `${passT}/${techRows.length}` : '–', `Main accounts with ${fmt(DATA.minT)}+ tech` + (techRows.length < rows.length ? ` (${techRows.length} captured)` : '')],
+    [rows.filter(w => w.o === 1).length, '1st offense (forgiven)'],
+    [fined.length, 'Fined (2nd offense +)'],
+    [gold(fined.reduce((a, w) => a + w.d, 0)), 'Fines this week (gold)'],
+  ];
+  $('tiles').innerHTML = tiles.map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+}
+
+function renderOverview() {
+  const pct = (wk, key, min) => {
+    const r = P.filter(p => p.w[wk] && !isFarm(p)).map(p => p.w[wk]).filter(w => w[key] != null);
+    return !partial(wk) && r.length >= 20 ? Math.round(100 * r.filter(w => w[key] >= min).length / r.length) : null;
+  };
+  lineChart($('passChart'), weeks, [
+    {name: 'Forts', color: 'var(--series-1)', values: weeks.map(w => pct(w, 'f', DATA.minF))},
+    {name: 'Tech', color: 'var(--series-2)', values: weeks.map(w => pct(w, 'x', DATA.minT))},
+  ], {yMax: 100, yFmt: v => v + '%', tipFmt: v => v + '%', directLabels: true,
+      nullFor: i => partial(weeks[i]) ? 'partial week, not comparable' : 'not captured'});
+  const levels = [['1st', 1, 'var(--ord-1)'], ['2nd', 2, 'var(--ord-2)'], ['3rd', 3, 'var(--ord-3)'], ['4th+', 4, 'var(--ord-4)']];
+  const stacks = levels.map(([name, n, color]) => ({name, color,
+    values: weeks.map(wk => P.filter(p => p.w[wk] && !isFarm(p) && Math.min(p.w[wk].o, 4) === n).length)}));
+  $('offLegend').innerHTML = stacks.map(s => `<span><i style="background:${s.color}"></i>${s.name}</span>`).join('');
+  stackChart($('offChart'), weeks, stacks, {note: i => partial(weeks[i]) ? '<br><i>Partial week: only part of the ranking was captured</i>' : ''});
+}
+
+function renderPlayer() {
+  const p = current;
+  if (!p || !$('playerDlg').open) return;
+  const lw = weeks.filter(w => p.w[w]).pop(), now = p.w[week], ranked = hasWeeks(p);
+  const tile = (v, l, cls = '') => `<div class="stat ${cls}"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  const kingdom = p.pw != null ? `
+    <div class="p-sec">Kingdom stats <span class="muted">· scan ${dayLabel(DATA.scanDay)}${DATA.namesDay && DATA.namesDay !== DATA.scanDay ? `, power ${dayLabel(DATA.namesDay)}` : ''}</span></div>
+    <div class="stats">${tile(short(p.pw), 'Power')}${tile(short(p.kp), 'Kill points')}${tile(short(p.dd), 'Deads')}${tile(short(p.rg), 'Resources gathered')}</div>` : '';
+  const due = !isFarm(p) ? unpaidOf(p) : 0;
+  const activity = ranked ? `
+    <div class="p-sec">Weekly activity <span class="muted">· ${now ? weekLabel(week) : `not in the ${weekLabel(week)} ranking` + (lw ? `, last seen ${weekLabel(lw)}` : '')}</span></div>
+    <div class="stats">${now ? tile(fmt(now.f), `Forts <span class="muted">(min ${DATA.minF})</span>`, now.f < DATA.minF ? 'bad' : 'good') +
+      tile(now.x == null ? '<span class="muted">not captured</span>' : fmt(now.x), `Tech <span class="muted">(min ${short(DATA.minT)})</span>`, now.x == null ? '' : now.x < DATA.minT ? 'bad' : 'good') : ''}${
+      !isFarm(p) ? tile(p.lt, 'Lifetime offenses', p.lt ? 'bad' : '') + tile(due ? gold(due) : '–', 'Unpaid fines (gold)', due ? 'bad' : '') : ''}</div>` : '';
+  $('playerView').innerHTML = `
+    <div class="player-head">
+      <span class="name">${esc(p.n)}</span>
+      ${p.g ? `<span class="chip" style="font-variant-numeric:tabular-nums">ID ${p.g}</span>` : ''}
+      <span class="chip">${typeTxt(p)}</span>${p.r ? `<span class="chip">${p.r}</span>` : ''}${p.ch ? `<span class="chip">CH${p.ch}</span>` : ''}
+      ${p.c ? '' : `<span class="chip">${strong(p) ? '<span class="dot" style="background:var(--serious)"></span>Likely farm · ' : ''}not confirmed</span>`}
+      ${ranked ? chip(p.o, isFarm(p)) : ''}
+      ${typeNote(p)}
+    </div>
+    <div class="p-meta">
+      <span>${p.x ? leftChip(p) : p.a ? esc(p.a) : p.pw != null ? 'No alliance' : 'Not in the latest scan'}</span>
+      ${ranked ? '' : '<span>Not in the alliance fort/tech rankings</span>'}
+      ${!p.hn && p.pn && p.pn.length ? `<span>Previously: ${p.pn.map(esc).join(', ')}</span>` : ''}
+    </div>
+    ${migNote(p)}
+    ${p.hn ? `<div class="p-sec">Name history</div><div class="names">${p.hn.slice().reverse().map(([n, a, b, src], i) => {
+      const kv = (src || '').match(/\d+/g), dates = kv && kv.every(x => KVK[x] && KVK[x].e) ? kvkWhen(kv[0]) + (kv.length > 1 ? ' – ' + kvkWhen(kv[kv.length - 1]).replace('≈ ', '') : '')
+        : !a ? 'before tracking' : a === b ? dayLabel(a) : `${dayLabel(a)} – ${dayLabel(b)}`;
+      return `<div class="nm${i ? ' old' : ''}"><span class="n">${esc(n)}${i ? '' : ' <span class="chip">current</span>'}</span>
+        <span class="when">${src ? esc(src) + ' · ' : ''}${dates}</span></div>`; }).join('')}</div>` : ''}
+    ${(() => { const on = ROSTERS.map(R => [R, R.r.find(r => r[0] === P.indexOf(p))]).filter(x => x[1]); return on.length ? `<div class="p-sec">KvK roster</div><div class="names">${on.reverse().map(([R, r]) => `<div class="nm"><span class="n">KvK ${R.k}: ${esc(r[1])}${r[2] ? ' · ' + r[2] : ''}</span><span class="when">${fmt(r[4])} power · ${dayLabel(R.d)}</span></div>`).join('')}</div>` : ''; })()}
+    ${p.im ? `<div class="p-sec">Immigration log</div><div class="names">${p.im.slice().reverse().map(([d, dir, sp]) => `<div class="nm"><span class="n">${dir === 'out' ? 'Emigrated out of the kingdom' : `Entered the kingdom${sp ? ' (special immigration)' : ''}`}</span><span class="when">${dayLabel(d)}</span></div>`).join('')}</div>` : ''}
+    ${p.kv ? `<div class="p-sec">KvK history</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>KvK</th><th>Name then</th><th>Type</th><th class="num">Result</th><th class="num">%</th><th>Notes</th></tr></thead>
+      <tbody>${p.kv.slice().reverse().map(r => `<tr style="cursor:default"><td>KvK ${r[0]} <span class="muted">${kvkWhen(r[0])}</span></td>
+        <td>${r[7] === p.n ? '<span class="muted">same</span>' : esc(r[7])}</td><td>${r[6] ? r[6][0].toUpperCase() + r[6].slice(1) : '–'}</td>
+        <td class="num">${kvResult(r)} <span class="muted">${KVK[r[0]] ? KVK[r[0]].m : ''}</span></td><td class="num">${kvPct(r)}</td>
+        <td style="white-space:normal">${kvNote(r)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${p.mg ? `<div class="p-sec">MGE</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>Event</th><th class="num">Rank</th><th class="num">Points</th><th class="num">Over limit</th><th>Fine</th></tr></thead>
+      <tbody>${p.mg.slice().reverse().map(([s, rank, pts, over, fine]) => { const f = mgeFine(s, P.indexOf(p));
+        return `<tr style="cursor:default"><td>${esc(MGE[s] ? MGE[s].l : s)}</td><td class="num">${rank}</td><td class="num">${fmt(pts)}</td>
+        <td class="num">${over ? fmt(over) : '–'}</td><td>${f ? fineStatus(f) : '<span class="muted">–</span>'}</td></tr>`; }).join('')}</tbody></table></div>` : ''}
+    ${p.gh ? `<div class="p-sec">20 GH</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>Event</th><th class="num">Rank</th><th class="num">Points</th><th class="num">Over limit</th><th>Fine</th></tr></thead>
+      <tbody>${p.gh.slice().reverse().map(([s, rank, pts, over]) => { const f = ghFine(s, P.indexOf(p));
+        return `<tr style="cursor:default"><td>${esc(GH[s] ? GH[s].l : s)}</td><td class="num">${rank}</td><td class="num">${fmt(pts)}</td>
+        <td class="num">${over ? fmt(over) : '–'}</td><td>${f ? fineStatus(f) : '<span class="muted">–</span>'}</td></tr>`; }).join('')}</tbody></table></div>` : ''}
+    ${p.mh ? `<div class="p-sec">MGE top 10 (in-game history)</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>Season</th><th class="num">Rank</th><th class="num">Points</th></tr></thead>
+      <tbody>${p.mh.map(([n, d, rank, pts]) => `<tr style="cursor:default"><td>Season ${n} <span class="muted">${dayLabel(d)}</span></td>
+        <td class="num">${rank}</td><td class="num">${fmt(pts)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${p.cc ? `<div class="p-sec">Canyon Clash</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>Event</th><th class="num">Defenses</th><th class="num">Attacks</th></tr></thead>
+      <tbody>${p.cc.slice().reverse().map(([s, dfn, att]) => `<tr style="cursor:default"><td>${esc(CANYON[s] ? CANYON[s].l : s)}</td>
+        <td class="num">${dfn}</td><td class="num">${ccAttacks(att, CANYON[s] ? CANYON[s].n : 3)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${p.ao ? `<div class="p-sec">Ark of Osiris</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>Battle</th><th class="num">Rank</th><th class="num">Points</th><th>Status</th></tr></thead>
+      <tbody>${p.ao.slice().reverse().map(([s, rank, pts]) => `<tr style="cursor:default"><td>${esc(AOO[s] ? AOO[s].l : s)}</td>
+        <td class="num">${rank}</td><td class="num">${pts ? fmt(pts) : '–'}</td><td>${aooStatus(pts)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${!p.c && p.h && p.h.length ? `<div class="p-sec">Farm hints</div><div class="hints">${p.h.map(h => `<span class="chip">${esc(h)}</span>`).join('')}</div>` : ''}
+    ${kingdom}${activity}
+    ${ranked ? `<div class="grid2" style="margin-top:16px">
+      <div><h2>Forts per week</h2>
+        <div class="legend"><span><i class="line" style="background:var(--series-1)"></i>Forts</span><span><i class="dash"></i>Minimum ${DATA.minF}</span></div>
+        <div id="pForts"></div></div>
+      <div><h2>Tech donation per week</h2>
+        <div class="legend"><span><i class="line" style="background:var(--series-1)"></i>Tech points</span><span><i class="dash"></i>Minimum ${fmt(DATA.minT)}</span></div>
+        <div id="pTech"></div></div>
+    </div>` : ''}`;
+  if (!ranked) return;
+  lineChart($('pForts'), weeks, [{name: 'Forts', color: 'var(--series-1)', values: weeks.map(w => p.w[w] ? p.w[w].f : null)}],
+    {threshold: DATA.minF, yFmtShort: v => v, tipFmt: v => fmt(v) + (v < DATA.minF ? ' (below minimum)' : ''), height: 200});
+  lineChart($('pTech'), weeks, [{name: 'Tech', color: 'var(--series-1)', values: weeks.map(w => p.w[w] ? p.w[w].x : null)}],
+    {threshold: DATA.minT, yFmt: v => v >= 1000 ? Math.round(v / 1000) + 'K' : v, yFmtShort: v => Math.round(v / 1000) + 'K',
+     tipFmt: v => fmt(v) + (v < DATA.minT ? ' (below minimum)' : ''), nullTxt: 'not captured', height: 200});
+}
+
+// ---------- master list ----------
+let rSortK = 'pw', rSortDir = -1;
+function statusCell(p) {
+  const mc = migChip(p);
+  if (mc) return mc;
+  if (p.x) return `<span class="muted">${onMap(p) ? goneNote(p) : 'Last seen ' + dayLabel(p.x)}</span>`;
+  const c = changes[p.id] || {}, st = typeState(p);
+  if (st === 'pending') return `<span class="chip"><span class="dot" style="background:var(--warning)"></span>${c.pending.type}? waiting for approval</span>`;
+  if (st === 'approved') return `<span class="chip"><span class="dot" style="background:var(--series-1)"></span>approved, recalculating</span>`;
+  if (p.c) return '<span class="muted">Confirmed</span>';
+  return strong(p) ? '<span class="chip"><span class="dot" style="background:var(--serious)"></span>Likely farm</span>' : '<span class="muted">Needs review</span>';
+}
+// Name or ID search: current name, Governor ID, previous names and every name in the name history
+const matches = (p, q) => !q || p.n.toLowerCase().includes(q) || (p.g || '').includes(q) ||
+  (p.pn || []).some(n => n.toLowerCase().includes(q)) || (p.hn || []).some(h => h[0].toLowerCase().includes(q));
+// Not in the latest scan / member export (p.x = last seen, p.xs = 'KvK <n>' when last seen only in a KvK sheet).
+// Last seen only in the latest KvK: we can't tell "still on the KvK map" from "migrated".
+const LAST_KVK = (DATA.kvks || []).length ? 'KvK ' + Math.max(...DATA.kvks.map(k => k.k)) : '';
+const onMap = p => p.x && p.xs && p.xs === LAST_KVK;
+const goneTxt = p => !p.em && onMap(p) ? `Not seen since ${p.xs}` : 'Migrated out';
+const goneNote = p => p.em ? `emigrated ${dayLabel(p.em)} (Immigration log)` : onMap(p) ? 'still on the KvK map, or migrated' : `last seen ${dayLabel(p.x)}${p.xs ? ` (${p.xs})` : ''}`;
+const leftChip = p => `<span class="chip"><span class="dot" style="background:var(--text-secondary)"></span>${goneTxt(p)} · ${goneNote(p)}</span>`;
+function renderRoster() {
+  const q = $('rosterSearch').value.trim().toLowerCase(), t = $('rosterType').value, chf = $('rosterCh').value;
+  // Governors not in the kingdom now (p.x = last seen) show up only in a search or under "Not in the kingdom now"
+  const rows = P.filter(p => (chf === 'all' || (chf === '25' ? p.ch >= 25 : !(p.ch >= 25))) && (t === 'left' ? p.x : !p.x || q) && (q || t === 'left' || allyAllOn() || allyPick.has(p.a || '')) && matches(p, q) &&
+    (t === 'all' || t === 'left' || (t === 'review' ? !p.c : t === 'likely' ? !p.c && strong(p) : p.t === t)));
+  rows.sort((a, b) => {
+    const va = a[rSortK] ?? (['n', 'a', 't', 'g'].includes(rSortK) ? '' : -1), vb = b[rSortK] ?? (typeof va === 'string' ? '' : -1);
+    return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * rSortDir;
+  });
+  const can = p => officer && !p.r && !typeState(p) && !p.x;  // R4/R5, changes in flight and governors who left can't be selected
+  rosterShown = rows.filter(can);
+  $('rosterBody').innerHTML = rows.map(p => `<tr data-i="${P.indexOf(p)}">
+      ${officer ? `<td class="sel">${can(p) ? `<input type="checkbox" data-sel="${P.indexOf(p)}"${picked.has(P.indexOf(p)) ? ' checked' : ''} aria-label="Select ${esc(p.n)}">` : ''}</td>` : ''}
+      <td>${esc(p.n)}</td><td class="muted" style="font-variant-numeric:tabular-nums">${p.g || '–'}</td><td>${p.a ? esc(p.a) : p.x ? `<span class="muted">${goneTxt(p)}</span>` : '<span class="muted">–</span>'}</td>
+      <td class="num">${p.ch || '<span class="muted">–</span>'}</td><td class="num">${short(p.pw)}</td><td class="num">${short(p.kp)}</td>
+      <td>${typeTxt(p)}</td><td>${statusCell(p)}</td>${officer ? `<td style="white-space:nowrap">${typeButtons(p)} ${migButtons(p, true)}</td>` : ''}</tr>`).join('') ||
+    `<tr><td colspan="${officer ? 10 : 8}" class="empty">No players match.</td></tr>`;
+  $('rosterActTh').hidden = $('rosterSelTh').hidden = !officer;
+  renderBulk();
+  const gone = rows.filter(p => p.x).length;
+  // totals of the governors shown; a missing power / kill points (not in the scan) counts as 0 and is noted
+  const sum = k => rows.reduce((a, p) => a + (p[k] || 0), 0), unknown = k => rows.filter(p => p[k] == null).length;
+  $('rosterTiles').innerHTML = [
+    [fmt(rows.length), 'Governors shown', ''],
+    [short(sum('pw')), 'Total power' + (unknown('pw') ? ` · ${unknown('pw')} without data` : ''), fmt(sum('pw'))],
+    [short(sum('kp')), 'Total kill points' + (unknown('kp') ? ` · ${unknown('kp')} without data` : ''), fmt(sum('kp'))],
+  ].map(([v, l, t]) => `<div class="tile"${t ? ` title="${t}"` : ''}><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('rosterCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'}` + (q && !allyAllOn() ? ' · searching all alliances' : '') +
+    (gone && t !== 'left' ? ` · ${gone} of them not in the kingdom now` : '');
+  $('rosterSub').textContent = `Every governor in the kingdom scan and member export, plus anyone seen in the alliance rankings. CH = city hall level from the CH25 roster (– = not on it: below 25, or not listed yet). Search also finds governors not in the kingdom now (migrated, or still on the last KvK map), from older scans, name lists and KvK sheets. Click a name for details. Events are tracked for ${DATA.mainAlly} only.`;
+}
+
+// ---------- KvK history tab ----------
+let kvSortK = 1, kvSortDir = -1;  // default: by the KvK's measure (KP / DKP / Acclaim), so rows follow the # rank
+function renderKvk() {
+  const n = +$('kvkSel').value, k = KVK[n];
+  if (!k) { $('kvkBody').innerHTML = '<tr><td class="empty">No KvK data yet.</td></tr>'; return; }
+  const q = $('kvkSearch').value.trim().toLowerCase(), t = $('kvkType').value, here = $('kvkHere').value;
+  const rows = P.map(p => ({p, r: (p.kv || []).find(r => r[0] === n)})).filter(({p, r}) => r && (here === 'all' || (here === 'out') === !!p.x) &&
+    (t === 'all' || (r[6] || p.t) === t) && (!q || matches(p, q) || r[7].toLowerCase().includes(q)));
+  // Rank = place by this KvK's measure among everyone in its sheet (governors who left included), ties share a rank
+  const vals = P.map(p => (p.kv || []).find(r => r[0] === n)).filter(r => r && r[1] != null).map(r => r[1]).sort((a, b) => b - a);
+  const rankOf = new Map();
+  vals.forEach((v, i) => { if (!rankOf.has(v)) rankOf.set(v, i + 1); });
+  const sk = kvSortK === 3 && rows.every(x => x.r[3] == null) ? 1 : kvSortK;  // no % in this KvK: sort by result
+  rows.sort((a, b) => ((a.r[sk] ?? -1) - (b.r[sk] ?? -1)) * kvSortDir);
+  const cols = [['#'], ['Player'], ['ID'], ['Kingdom'], ['Name then'], ['Type'], [k.m, 1], ['Target', 2], ['%', 3], ['Notes']];
+  $('kvkHead').innerHTML = cols.map(([h, i]) => `<th${i ? ` class="num" data-kv="${i}"` : h === '#' ? ' class="num" style="cursor:default"' : ''}>${h}</th>`).join('');
+  $('kvkBody').innerHTML = rows.map(({p, r}) => `<tr data-i="${P.indexOf(p)}"><td class="num muted">${r[1] == null ? '–' : rankOf.get(r[1])}</td><td>${esc(p.n)}</td>
+      <td class="muted" style="font-variant-numeric:tabular-nums">${p.g || '–'}</td>
+      <td style="white-space:normal">${p.x ? `<span class="${onMap(p) ? '' : 'below'}" style="font-weight:500">${goneTxt(p)}</span> <span class="muted">· ${goneNote(p)}</span>` : '<span class="muted">In kingdom</span>'}</td><td>${r[7] === p.n ? '<span class="muted">same</span>' : esc(r[7])}</td><td>${r[6] ? r[6][0].toUpperCase() + r[6].slice(1) : typeTxt(p)}</td>
+      <td class="num">${r[1] == null ? '–' : short(r[1])}</td><td class="num">${r[2] ? short(r[2]) : '<span class="muted">No target</span>'}</td>
+      <td class="num">${pctCell(r[3])}</td><td style="white-space:normal">${kvNote(r)}</td></tr>`).join('') ||
+    '<tr><td colspan="10" class="empty">No players match.</td></tr>';
+  const gone = rows.filter(x => x.p.x).length;
+  $('kvkCount').textContent = `${rows.length} governor${rows.length === 1 ? '' : 's'}` + (here === 'all' && gone ? ` · ${rows.length - gone} in the kingdom, ${gone} not in the kingdom now` : here === 'out' ? ' not in the kingdom now' : here === 'in' ? ' in the kingdom' : '');
+  $('kvkSub').textContent = `KvK ${n} · ${kvkWhen(n)}${k.e ? ' (date estimated)' : ''} · measured by ${k.m}` +
+    (k.m === 'Acclaim' ? '' : ' (no acclaim yet in this KvK)') + '. # = rank by ' + k.m + ' among everyone in the KvK sheet. Everyone in the sheet is listed. Not in the latest scan or member export: "Not seen since KvK <n>" if the last sighting is the latest KvK (still on its map, or migrated), else "Migrated out". Matched by Governor ID.';
+}
+$('kvkSel').innerHTML = (DATA.kvks || []).slice().reverse().map(k => `<option value="${k.k}">KvK ${k.k} · ${kvkWhen(k.k)}</option>`).join('');
+['kvkSel', 'kvkSearch', 'kvkType', 'kvkHere'].forEach(id => $(id).addEventListener('input', renderKvk));
+$('kvkHead').addEventListener('click', e => {
+  const th = e.target.closest('th[data-kv]');
+  if (!th) return;
+  const k = +th.dataset.kv; kvSortDir = kvSortK === k ? -kvSortDir : -1; kvSortK = k; renderKvk();
+});
+
+// ---------- fine calculator (public; holds no player data, only the exchange rates) ----------
+// Fines can be paid in food/wood/stone/gold (or a mix), at the rates of their kind (FINE_KINDS in track.py):
+// KINDS[kind].rss[r] = units of resource r worth 1 gold of the fine. Fort fines have no t; MGE fines have t = 'mge'.
+const KINDS = DATA.fineKinds || {fort: {label: 'Fort', rss: {gold: 1}}};
+const rssOf = f => KINDS[f.t || 'fort'].rss;
+// Rounded UP to 2 decimals of M/B, so paying the shown amount always covers the rest (same as the mail).
+const payFmt = n => n >= 1e9 ? Math.ceil(n / 1e7) / 100 + 'B' : n >= 1e6 ? Math.ceil(n / 1e4) / 100 + 'M' : fmt(Math.ceil(n));
+const amount = v => {  // "300M", "1.5b", "1,575,569", "" -> number (0 for empty, NaN if unreadable)
+  const m = String(v).trim().toLowerCase().replace(/,/g, '').match(/^([\d.]*)\s*([kmb]?)$/);
+  return !m ? NaN : m[1] === '' ? (m[2] ? NaN : 0) : Number(m[1]) * ({k: 1e3, m: 1e6, b: 1e9}[m[2]] || 1);
+};
+const cap = r => r[0].toUpperCase() + r.slice(1);
+// Rounded up like payFmt, as a full number with commas (what tap-to-fill puts in a field)
+const payFull = n => fmt(n >= 1e9 ? Math.ceil(n / 1e7) * 1e7 : n >= 1e6 ? Math.ceil(n / 1e4) * 1e4 : Math.ceil(n));
+// Commas per thousand while typing plain numbers ("300000000" -> "300,000,000"), keeping the cursor after the same digit;
+// short forms like 300M or 1.5B are left as typed
+function groupDigits(i) {
+  const m = i.value.match(/^([\d,]*)(\.\d*)?$/);
+  if (!m || !m[1]) return;
+  const digitsBefore = i.value.slice(0, i.selectionStart).replace(/\D/g, '').length;
+  const int = m[1].replace(/,/g, '').replace(/^0+(?=\d)/, ''), v = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (m[2] || '');
+  if (v === i.value) return;
+  i.value = v;
+  let pos = 0;
+  for (let n = 0; pos < v.length && n < digitsBefore; pos++) if (/\d/.test(v[pos])) n++;
+  i.setSelectionRange(pos, pos);
+}
+// One calculator per card: data-calc-card="all" (Fines tab: every kind, chosen in a list) or a kind of fine (its event
+// tab: fort on Weekly activity, mge, gh). calcs[kind] = {fill(gold)} for the "Calculate" buttons.
+const calcs = {};
+document.querySelectorAll('[data-calc-card]').forEach(card => {
+  const fixed = card.dataset.calcCard === 'all' ? null : card.dataset.calcCard;
+  if (fixed && !KINDS[fixed]) { card.remove(); return; }
+  card.innerHTML = `<h2>${fixed ? esc(KINDS[fixed].label) + ' fine calculator' : 'Fine calculator'}</h2>
+    <div class="sub">Pay in any one resource, or mix them. Enter your fine and what you already have to see what is left.</div>
+    <div class="controls">
+      ${fixed ? '' : '<label class="sub">Fine for <select class="c-kind"></select></label>'}
+      <input type="text" class="c-fine" inputmode="decimal" autocomplete="off" aria-label="Your fine in gold" style="flex:1 1 220px;min-width:0">
+      <span class="sub">gold</span>
+      <button class="act ghost c-reset" type="button">Reset</button>
+    </div>
+    <div class="table-wrap" style="margin-top:12px"><table class="rates c-rates"></table></div>
+    <div class="sub">Each row is worth the same in every column: pay one column, or mix them.</div>
+    <div class="sub" style="margin-top:12px">What you pay with (leave empty if none). Type the full number (commas are added for you) or a short form like 300M or 1.5B.</div>
+    <div class="calc c-have"></div>
+    <div class="calc-out c-out"></div>`;
+  const q = c => card.querySelector(c), kindSel = q('.c-kind'), fine = q('.c-fine'), haveBox = q('.c-have'), out = q('.c-out');
+  if (kindSel) kindSel.innerHTML = Object.entries(KINDS).map(([k, x]) => `<option value="${k}">${esc(x.label)} fine</option>`).join('');
+  const kind = () => fixed || kindSel.value, rssNow = () => KINDS[kind()].rss;
+  // Resource fields of the chosen kind of fine (typed amounts are kept when switching)
+  function fields() {
+    const was = Object.fromEntries([...haveBox.querySelectorAll('input')].map(i => [i.dataset.rss, i.value]));
+    haveBox.innerHTML = Object.keys(rssNow()).map(r => `<label>${cap(r)}<input type="text" inputmode="decimal" data-rss="${r}" placeholder="0" autocomplete="off" value="${esc(was[r] || '')}">` +
+      `<button class="hint" type="button" data-fill="${r}" hidden></button></label>`).join('');
+    const rss = rssNow(), k = KINDS[kind()];
+    // Rate table: one row per step of the fine (e.g. 2nd / 3rd fort offense), its value in each resource
+    const res = ['gold', ...Object.keys(rss).filter(r => r !== 'gold')];
+    const n = v => v >= 1e6 ? payFmt(v) : v >= 1e5 ? v / 1e3 + 'K' : fmt(v);
+    q('.c-rates').innerHTML = `<thead><tr><th>${esc(k.label)} fine</th>${res.map(r => `<th class="num">${cap(r)}</th>`).join('')}</tr></thead>` +
+      `<tbody>${(k.steps || []).map(([what, g]) => `<tr><td>${esc(what)}</td>${res.map(r => `<td class="num">${n(g * rss[r])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    fine.placeholder = kind() !== 'fort' ? 'Your fine in gold, e.g. 787.79M or 787,790,000' : 'Your fine in gold, e.g. 35M or 35,000,000';
+  }
+  function render() {
+    const due = amount(fine.value), rss = rssNow();  // the fine in gold, as in the mail and the Fines list
+    const have = [...haveBox.querySelectorAll('input')].map(i => [i.dataset.rss, amount(i.value)]);
+    const bad = have.filter(([, v]) => isNaN(v)).map(([r]) => cap(r));
+    if (!fine.value.trim()) {
+      haveBox.querySelectorAll('[data-fill]').forEach(b => { b.hidden = true; });
+      haveBox.querySelectorAll('input').forEach(i => { i.placeholder = '0'; });
+      out.innerHTML = '<span class="muted">Enter your fine to start.</span>'; return;
+    }
+    if (isNaN(due) || bad.length) { out.innerHTML = `<span class="below">Can't read ${isNaN(due) ? 'the fine' : bad.join(', ')}</span>: use numbers like 787.79M or 1,575,569.`; return; }
+    const paid = have.reduce((a, [r, v]) => a + v / rss[r], 0), left = due - paid;
+    // Suggest under every empty resource as soon as the fine is entered (the whole fine, then the rest): tap to fill it in
+    const started = have.some(([, v]) => v > 0), word = started ? 'rest' : 'fine';
+    haveBox.querySelectorAll('[data-fill]').forEach(b => {
+      const r = b.dataset.fill, input = haveBox.querySelector(`[data-rss="${r}"]`), empty = !input.value.trim();
+      b.hidden = !(empty && left > 0);
+      if (!b.hidden) { b.dataset.v = payFull(left * rss[r]); b.textContent = `↑ tap to fill the ${word}: ${b.dataset.v}`; }
+      input.placeholder = b.hidden ? '0' : `${word}: ${payFmt(left * rss[r])}`;  // the suggestion sits in the empty field itself
+    });
+    const used = have.filter(([, v]) => v > 0).map(([r, v]) => `${payFmt(v)} ${cap(r)}`).join(' + ');
+    out.innerHTML = `<div class="stats">
+        <div class="stat"><div class="v">${payFmt(due)}</div><div class="l">Fine (gold)</div></div>
+        <div class="stat"><div class="v">${payFmt(paid)}</div><div class="l">Covered (gold value)${used ? ' · ' + esc(used) : ''}</div></div>
+        <div class="stat ${left > 0 ? 'bad' : 'good'}"><div class="v">${left > 0 ? payFmt(left) : '0'}</div><div class="l">Still to pay (gold value)</div></div>
+      </div>` + (left > 0
+        ? `<div style="margin-top:10px"><b>Pay the rest with ONE of:</b> ${Object.entries(rss).map(([r, x]) => `<b>${payFmt(left * x)}</b> ${cap(r)}`).join(' · ')}</div>`
+        // a tiny extra only comes from rounding the suggestions up: don't flag it as overpaying
+        : `<div style="margin-top:10px" class="paid">✓ Fully covered${-left > due * 0.005 ? ` (${payFmt(-left)} gold value more than the fine)` : ''}.</div>`) +
+      `<div class="sub" style="margin-top:6px">Send everything to the bank KD, then tell an R4 what you sent.</div>`;
+  }
+  fine.addEventListener('input', e => { groupDigits(e.target); render(); });
+  if (kindSel) kindSel.addEventListener('input', () => { fields(); render(); });
+  q('.c-reset').addEventListener('click', () => {
+    card.querySelectorAll('.c-fine, .c-have input').forEach(i => { i.value = ''; });
+    fields();
+    render();
+    fine.focus();
+  });
+  haveBox.addEventListener('input', e => { if (e.target.matches('input')) groupDigits(e.target); render(); });
+  haveBox.addEventListener('click', e => {
+    const b = e.target.closest('button[data-fill]');
+    if (!b) return;
+    e.preventDefault();
+    haveBox.querySelector(`[data-rss="${b.dataset.fill}"]`).value = b.dataset.v;
+    render();
+  });
+  fields();
+  render();
+  if (fixed) calcs[fixed] = {fill(g) {  // "Calculate" on an event tab: start from what is left of that fine
+    haveBox.querySelectorAll('input').forEach(i => { i.value = ''; });
+    fine.value = payFull(g);
+    render();
+    card.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }};
+});
+
+// ---------- payment claims: players send proof, R4s approve or reject (fines_ledger/Code.js) ----------
+// Keep in sync with CLAIM in fines_ledger/Code.js
+const CLAIM_MAX_FILES = 20, CLAIM_MAX_BYTES = 30 * 1024 * 1024;
+const CLAIM_TYPES = /^(image\/(jpeg|png|webp|gif|heic|heif)|video\/(mp4|quicktime|webm|3gpp))$/;
+const EXT_TYPE = {heic: 'image/heic', heif: 'image/heif', mov: 'video/quicktime', mp4: 'video/mp4', webm: 'video/webm', '3gp': 'video/3gpp',
+                  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp'};
+let claims = {}, claimList = [];  // claims: fine_id -> {s: status, t, why} (public); claimList: every open/recent claim (R4s)
+const typeOf = file => file.type || EXT_TYPE[(file.name.split('.').pop() || '').toLowerCase()] || '';
+const mb = n => (n / 1048576).toFixed(n < 10 * 1048576 ? 1 : 0) + 'MB';
+async function post(body) {
+  const r = await fetch(DATA.finesUrl, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify(body)});
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'not saved');
+  return j;
+}
+const base64 = file => new Promise((ok, fail) => {
+  const rd = new FileReader();
+  rd.onload = () => ok(String(rd.result).split(',')[1]);
+  rd.onerror = () => fail(new Error('could not read ' + file.name));
+  rd.readAsDataURL(file);
+});
+
+// Fines list status: proof waiting / rejected, and the player's "I've paid" button
+function claimStatus(f) {
+  const c = claims[f.id];
+  if (c && c.s === 'pending') return ' <span class="chip"><span class="dot" style="background:var(--warning)"></span>Proof sent · waiting for an R4</span>';
+  const why = c && c.s === 'rejected' ? ` <span class="muted">Proof rejected: ${esc(c.why || 'no reason given')}</span>` : '';
+  return why + (officer || f.pv || !DATA.finesUrl || !DATA.claimsOn ? '' : ` <button class="act ghost" data-claim="${f.id}" type="button">I've paid: send proof</button>`);
+}
+
+function openClaim(f) {
+  const name = f.p != null ? P[f.p].n : f.n, rss = rssOf(f), paid = paidOf(f);
+  $('claimView').innerHTML = `<h2>Send payment proof</h2>
+    <div class="sub">${esc(name)} · ${esc(fineLabel(f))} · fine <b>${gold(f.a)}</b> gold value${paid ? ` · ${gold(paid)} already recorded` : ''}</div>
+    <div class="sub" style="margin-top:12px">What did you send to the bank KD <b>${esc(DATA.bank || '')}</b>? One resource or a mix.</div>
+    <div class="calc" id="clHave">${Object.keys(rss).map(r => `<label>${cap(r)}<input type="text" inputmode="decimal" data-cl="${r}" placeholder="0" autocomplete="off"></label>`).join('')}</div>
+    <div class="calc-out" id="clSum"></div>
+    <label class="sub" style="display:block;margin-top:12px">Proof: screenshots or a screen recording showing the resources you sent
+      (up to ${CLAIM_MAX_FILES} files, ${CLAIM_MAX_BYTES / 1048576}MB in total)
+      <input type="file" id="clFiles" multiple accept="image/*,video/mp4,video/quicktime,video/webm,video/3gpp,.heic,.mov" style="display:block;margin-top:6px"></label>
+    <ul class="files" id="clFileList"></ul>
+    <label class="sub" style="display:block;margin-top:8px">Note for the R4s (optional)
+      <textarea id="clNote" rows="2" maxlength="300" style="display:block;width:100%;margin-top:4px"></textarea></label>
+    <div class="controls"><button class="act" id="clSend" type="button">Send proof</button><span class="sub" id="clMsg"></span></div>`;
+  const sentValue = () => [...document.querySelectorAll('#clHave input')].reduce((a, i) => a + amount(i.value) / rss[i.dataset.cl], 0);
+  const check = () => {
+    const files = [...$('clFiles').files], total = files.reduce((a, x) => a + x.size, 0), v = sentValue(), due = f.a - paid;
+    $('clSum').innerHTML = isNaN(v) ? '<span class="below">Use numbers like 300M or 1,575,569.</span>'
+      : v ? `Worth <b>${payFmt(v)}</b> gold value · ${v >= due ? '<span class="paid">covers the fine</span>' : `<span class="below">${payFmt(due - v)} short</span>`}` : '';
+    $('clFileList').innerHTML = files.map(x => `<li${CLAIM_TYPES.test(typeOf(x)) ? '' : ' class="bad"'}>${esc(x.name)} · ${mb(x.size)}${CLAIM_TYPES.test(typeOf(x)) ? '' : ' · not a screenshot or recording'}</li>`).join('') +
+      (files.length ? `<li class="${files.length > CLAIM_MAX_FILES || total > CLAIM_MAX_BYTES ? 'bad' : 'muted'}">${files.length} file${files.length === 1 ? '' : 's'}, ${mb(total)} in total</li>` : '');
+    return {files, total, v};
+  };
+  $('clHave').addEventListener('input', e => { groupDigits(e.target); check(); });
+  $('clFiles').addEventListener('change', check);
+  $('clSend').addEventListener('click', async () => {
+    const {files, total, v} = check(), b = $('clSend');
+    const err = isNaN(v) || !v ? 'Fill in what you sent.' : !files.length ? 'Attach a screenshot or recording.'
+      : files.length > CLAIM_MAX_FILES ? `Attach at most ${CLAIM_MAX_FILES} files.` : total > CLAIM_MAX_BYTES ? `Files are over ${CLAIM_MAX_BYTES / 1048576}MB in total.`
+      : files.some(x => !CLAIM_TYPES.test(typeOf(x))) ? 'Only screenshots (JPG, PNG, WebP, HEIC) and recordings (MP4, MOV, WebM).' : '';
+    if (err) { $('clMsg').innerHTML = `<span class="below">${err}</span>`; return; }
+    const sent = [...document.querySelectorAll('#clHave input')].filter(i => amount(i.value) > 0)
+      .map(i => `${payFull(amount(i.value))} ${cap(i.dataset.cl)}`).join(' + ');
+    saving(b);
+    try {
+      const {claim_id, token} = await post({action: 'claim', fine_id: f.id, player: name, week: f.wk, fine: fineLabel(f), sent,
+        gold_value: Math.round(v), note: $('clNote').value.trim(), files: files.map(x => ({type: typeOf(x), size: x.size}))});
+      for (let i = 0; i < files.length; i++) {
+        $('clMsg').textContent = `Uploading ${i + 1} of ${files.length}…`;
+        await LEDGER.uploadClaimFile(claim_id, token, files[i], typeOf(files[i]));
+      }
+      await post({action: 'claim_done', claim_id, token});
+      claims = {...claims, [f.id]: {s: 'pending', t: new Date().toISOString()}};
+      $('claimView').innerHTML = `<h2>Proof sent</h2><div class="sub">Thanks, ${esc(name)}. An R4 will check the bank KD and confirm your payment.
+        Until then this fine shows "Proof sent · waiting for an R4".</div>`;
+      renderFines();
+    } catch (e) { $('clMsg').innerHTML = `<span class="below">Not sent: ${esc(e.message)}. Try again.</span>`; b.disabled = false; b.textContent = b.dataset.label; }
+  });
+  $('claimDlg').showModal();
+}
+
+// R4s: claims waiting for a decision first, then the recent decisions
+function renderClaims() {
+  $('claimsCard').hidden = !officer;
+  if (!officer) return;
+  const order = {pending: 0, approved: 1, rejected: 1};
+  const list = claimList.slice().sort((a, b) => order[a.status] - order[b.status] || (b.decided || b.time).localeCompare(a.decided || a.time));
+  $('claimsBody').innerHTML = list.map(c => {
+    const f = F.find(x => x.id === c.fine_id);
+    const proof = c.cleaned ? '<span class="muted">deleted</span>' : c.files.map((x, i) =>
+      `<button class="act ghost" data-view="${c.id}|${x.id}" type="button" title="${esc(x.n)} · ${mb(x.s)}">${x.t.startsWith('video') ? '▶' : '🖼'} ${i + 1}</button>`).join(' ');
+    const act = c.status === 'pending'
+      ? `<button class="act" data-approve="${c.id}" type="button">Approve</button> <button class="act ghost" data-reject="${c.id}" type="button">Reject</button>`
+      : `<span class="${c.status === 'approved' ? 'paid' : 'muted'}">${c.status === 'approved' ? '✓ Approved' : 'Rejected'}</span> <span class="muted">${esc(c.by)}, ${c.decided.slice(0, 10)}${c.reason ? ' · ' + esc(c.reason) : ''}</span>`;
+    return `<tr${f && f.p != null ? ` data-i="${f.p}"` : ''}><td>${esc(c.player)}</td><td>${esc(f ? fineLabel(f) : c.fine)}</td>
+      <td style="white-space:normal">${esc(c.sent)}<br><span class="muted">${gold(c.gold)} gold value of ${f ? gold(f.a) : '?'}</span></td>
+      <td>${proof}</td><td style="white-space:normal">${c.note ? esc(c.note) : '<span class="muted">–</span>'}</td>
+      <td>${c.time.slice(0, 10)}</td><td>${act}</td></tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">No payment claims.</td></tr>';
+}
+
+$('claimsBody').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-view], button[data-approve], button[data-reject]');
+  if (!b || !officer) return;
+  if (b.dataset.view) {
+    const [claim_id, file_id] = b.dataset.view.split('|');
+    $('fileView').innerHTML = '<div class="sub">Loading the file…</div>';
+    $('fileDlg').showModal();
+    try {
+      const j = await post({key: r4key, action: 'claim_view', claim_id, file_id});
+      const url = j.url;
+      $('fileView').innerHTML = `<div class="sub">${esc(j.name)} · <a href="${url}" download="${esc(j.name)}">Download</a></div>` +
+        (j.type.startsWith('video') ? `<video class="proof" src="${url}" controls playsinline></video>` : `<img class="proof" src="${url}" alt="Payment proof">`);
+    } catch (err) { $('fileView').innerHTML = `<div class="below">Could not load: ${esc(err.message)}</div>`; }
+    return;
+  }
+  const c = claimList.find(x => x.id === (b.dataset.approve || b.dataset.reject)), f = F.find(x => x.id === c.fine_id);
+  let body;
+  if (b.dataset.approve) {
+    const before = f ? paidOf(f) - (f.h || 0) : 0;  // what the ledger already records for this fine
+    const v = prompt(`Approve ${c.player}: ${c.sent} (${gold(c.gold)} gold value).\nCheck the bank KD first.\n\n` +
+      `Total paid to record for this fine, in gold value${before ? ` (already recorded ${gold(before)})` : ''}:`, Math.round(before + c.gold));
+    if (v == null) return;
+    const total = amount(v);
+    if (!(total > 0)) return alert('Enter the total in gold value, e.g. 35M or 35000000.');
+    body = {action: 'claim_approve', amount: Math.round(total)};
+  } else {
+    const why = prompt(`Reject the proof from ${c.player}? The player sees this reason and can send again:`, 'Not received in the bank KD');
+    if (!why || !why.trim()) return;
+    body = {action: 'claim_reject', reason: why.trim()};
+  }
+  saving(b);
+  try {
+    await post({key: r4key, claim_id: c.id, ...body});
+    Object.assign(c, {status: body.amount ? 'approved' : 'rejected', by: officer, decided: new Date().toISOString(), reason: body.reason || ''});
+    claims = {...claims, [c.fine_id]: {s: c.status, t: c.decided, why: body.reason}};
+    if (body.amount && f) ledger = {...ledger, [f.id]: {amount: body.amount, by: officer, time: c.decided}};
+    saved();
+  } catch (err) { notSaved(b, err); }
+});
+$('finesBody').addEventListener('click', e => {
+  const b = e.target.closest('button[data-claim]');
+  if (b) openClaim(F.find(f => f.id === b.dataset.claim));
+});
+// Players suggest farm/main for an account; an R4 approves or rejects it in Review
+document.addEventListener('click', e => {
+  const b = e.target.closest('button[data-suggest]');
+  if (!b || officer) return;
+  const p = P[+b.dataset.i], type = b.dataset.suggest;
+  $('suggestView').innerHTML = `<h2>Suggest ${esc(p.n)} is a ${type} account</h2>
+    <div class="sub">An R4 checks it and approves or rejects it. ${type === 'farm' ? 'Farms get no fort offenses or fines and are not in the rewards.' : 'Main accounts follow the weekly fort rules.'}
+      Once approved, every week is recalculated.</div>
+    <label class="sub" style="display:block;margin-top:12px">Your in-game name (optional)
+      <input type="text" id="sgName" maxlength="40" autocomplete="off" style="display:block;width:100%;margin-top:4px;box-sizing:border-box"></label>
+    <label class="sub" style="display:block;margin-top:8px">Why? (optional, e.g. "it's my farm, main is …")
+      <textarea id="sgNote" rows="2" maxlength="200" style="display:block;width:100%;margin-top:4px"></textarea></label>
+    <div class="controls"><button class="act" id="sgSend" type="button">Send suggestion</button><span class="sub" id="sgMsg"></span></div>`;
+  $('sgSend').addEventListener('click', async () => {
+    const s = $('sgSend'), name = $('sgName').value.trim();
+    saving(s);
+    try {
+      await post({action: 'propose', account_id: p.id, player: p.n, type, name, note: $('sgNote').value.trim()});
+      changes = {...changes, [p.id]: {...(changes[p.id] || {}), pending: {type, by: 'player: ' + (name || 'anonymous'), time: new Date().toISOString(), pub: true}}};
+      $('suggestView').innerHTML = `<h2>Suggestion sent</h2><div class="sub">Thanks. An R4 will check whether ${esc(p.n)} is a ${type} account.</div>`;
+      renderPlayer(); renderRoster();
+    } catch (err) { $('sgMsg').innerHTML = `<span class="below">Not sent: ${esc(err.message)}. Try again.</span>`; s.disabled = false; s.textContent = s.dataset.label; }
+  });
+  $('suggestDlg').showModal();
+});
+document.querySelectorAll('.dlg').forEach(d => {
+  d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) d.close(); });
+  d.addEventListener('close', () => { d.querySelectorAll('video').forEach(v => v.pause()); });
+});
+
+// ---------- MGE tab ----------
+// an MGE row: [rank, player index or null, name then, points, slot, limit (null = no cap), over, fine, took slot]
+const MGE = Object.fromEntries((DATA.mges || []).map(m => [m.s, m]));
+const mgeFine = (s, i, name) => F.find(f => f.t === 'mge' && f.wk === s && (i != null ? f.p === i : f.n === name));
+const calcBtn = f => paidOf(f) < f.a ? ` <button class="act ghost" data-calc="${f.id}" type="button">Calculate</button>` : '';
+const fineStatus = f => { const paid = paidOf(f); return paid >= f.a ? '<span class="paid">✓ Paid</span>' : paid ? `${gold(paid)} of ${gold(f.a)} paid` : '<span class="below">Unpaid</span>'; };
+function renderMge() {
+  const hist = $('mgeSel').value === 'history';  // past seasons (top 10 each) instead of one MGE's ranking
+  $('mgeTiles').style.display = hist ? 'none' : '';  // .tiles sets display, so hidden alone would not hide it
+  $('mgeRankCard').hidden = hist;
+  if ($('mgeCalc')) $('mgeCalc').hidden = hist;
+  document.querySelectorAll('.mgh').forEach(c => c.hidden = !hist);
+  if (hist) return;
+  const m = MGE[$('mgeSel').value];
+  if (!m) { $('mgeBody').innerHTML = '<tr><td colspan="8" class="empty">No MGE data yet.</td></tr>'; return; }
+  const q = $('mgeSearch').value.trim().toLowerCase(), show = $('mgeShow').value;
+  const name = r => r[1] != null ? P[r[1]].n : r[2];
+  const rows = m.r.filter(r => (!q || name(r).toLowerCase().includes(q) || r[2].toLowerCase().includes(q)) &&
+    (show === 'all' || (show === 'over' ? r[6] > 0 : r[4] != null)));
+  const fines = m.r.filter(r => r[7]).map(r => mgeFine(m.s, r[1], r[2])).filter(Boolean);
+  const owed = fines.reduce((a, f) => a + Math.max(0, f.a - paidOf(f)), 0), slots = m.r.filter(r => r[4] != null);
+  $('mgeTiles').innerHTML = [
+    [`${slots.filter(r => !r[6]).length}/${slots.length}`, 'Top-10 slot holders within their allocation'],
+    [m.r.filter(r => r[8]).length, 'Takeovers (slot taken by someone else)'],
+    [fines.length, 'Players over the limit'],
+    [gold(fines.reduce((a, f) => a + f.a, 0)), 'Fines (gold value)'],
+    [gold(owed), 'Still unpaid (gold value)'],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('mgeBody').innerHTML = rows.map(r => {
+    const f = r[7] ? mgeFine(m.s, r[1], r[2]) : null;
+    const slot = r[4] == null ? '<span class="muted">–</span>' : r[0] === r[4] ? `${r[4]} <span class="paid">held</span>`
+      : r[0] < r[4] ? (r[6] ? `${r[4]} <span class="below">took a higher slot</span>` : `${r[4]} <span class="paid">same reward tier</span>`)
+      : `${r[4]} <span class="muted">finished lower</span>`;
+    const took = r[8] ? ` <span class="chip"><span class="dot" style="background:var(--critical)"></span>took slot ${r[8]}</span>` : '';
+    return `<tr${r[1] != null ? ` data-i="${r[1]}"` : ''}><td class="num">${r[0]}</td><td>${esc(name(r))}${took}</td><td>${slot}</td>
+      <td class="num">${r[5] == null ? 'No cap' : short(r[5])}</td><td class="num">${fmt(r[3])}</td>
+      <td class="num">${r[6] ? `<span class="below">${fmt(r[6])}</span>` : '<span class="muted">–</span>'}</td>
+      <td class="num">${r[7] ? gold(r[7]) : '–'}</td><td>${f ? fineStatus(f) + calcBtn(f) : r[4] != null ? '<span class="muted">Within allocation</span>' : '<span class="paid">OK</span>'}</td></tr>`;
+  }).join('') || '<tr><td colspan="8" class="empty">No players match.</td></tr>';
+  $('mgeCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} · ranks 1–${m.r.length} captured`;
+  $('mgeSub').textContent = `${m.l}${m.f ? '' : ' · PROVISIONAL ranking: fines are not final and cannot be marked paid yet'} · Top-10 slots may go past their listed points as long as they finish at their slot (slots with the same reward, e.g. 7–10, may swap). ` +
+    `Everyone else: max ${short(m.c)} points. Fine per point over: ${Object.entries(DATA.mgeFine).map(([r, v]) => fmt(v) + ' ' + r).join(' / ')} (one or a mix), paid to the bank KD.`;
+}
+// History's Mightiest Governors: per season {n, d, r: [[rank, player index or null, alliance then, name then, points]]}
+const MGH = DATA.mgeHist || [];
+const mghName = r => r[1] != null ? esc(P[r[1]].n) + (P[r[1]].n !== r[3] ? ` <span class="muted">as ${esc(r[3])}</span>` : '') : esc(r[3]);
+const mghSeason = m => `Season ${m.n} <span class="muted">${dayLabel(m.d)}</span>`;
+function renderMgh() {
+  const sel = $('mghSel').value, q = $('mghSearch').value.trim().toLowerCase();
+  const rows = MGH.filter(m => sel === 'all' || String(m.n) === sel).flatMap(m => m.r.map(r => [m, r]))
+    .filter(([, r]) => !q || r[3].toLowerCase().includes(q) || (r[1] != null && P[r[1]].n.toLowerCase().includes(q)));
+  $('mghBody').innerHTML = rows.map(([m, r]) => `<tr${r[1] != null ? ` data-i="${r[1]}"` : ' style="cursor:default"'}><td>${mghSeason(m)}</td>
+    <td class="num">${r[0]}</td><td>${mghName(r)}</td><td>${r[2] ? esc(`[${r[2]}]`) : '<span class="muted">–</span>'}</td><td class="num">${fmt(r[4])}</td></tr>`).join('')
+    || `<tr><td colspan="5" class="empty">${MGH.length ? 'No players match.' : 'No MGE history yet.'}</td></tr>`;
+  $('mghCount').textContent = MGH.length ? `${rows.length} row${rows.length === 1 ? '' : 's'} · seasons ${MGH[MGH.length - 1].n}–${MGH[0].n}` : '';
+  const by = new Map();  // one row per governor (or per name when not matched to a Governor ID)
+  MGH.forEach(m => m.r.forEach(r => {
+    const k = r[1] != null ? 'p' + r[1] : 'n' + r[3];
+    if (!by.has(k)) by.set(k, {r, s: []});
+    by.get(k).s.push([m.n, r[0], r[4]]);
+  }));
+  const top = [...by.values()].sort((a, b) => b.s.length - a.s.length || b.s.filter(x => x[1] === 1).length - a.s.filter(x => x[1] === 1).length ||
+    Math.min(...a.s.map(x => x[1])) - Math.min(...b.s.map(x => x[1])));
+  $('mghTopBody').innerHTML = top.map(({r, s}) => `<tr${r[1] != null ? ` data-i="${r[1]}"` : ' style="cursor:default"'}>
+    <td>${r[1] != null ? esc(P[r[1]].n) : esc(r[3])}</td><td class="num">${s.length}</td><td class="num">${s.filter(x => x[1] === 1).length || '–'}</td>
+    <td class="num">${Math.min(...s.map(x => x[1]))}</td><td class="num">${fmt(Math.max(...s.map(x => x[2])))}</td>
+    <td class="muted" style="white-space:normal">${s.map(x => `S${x[0]} #${x[1]}`).join(', ')}</td></tr>`).join('')
+    || '<tr><td colspan="6" class="empty">No MGE history yet.</td></tr>';
+  $('mghTopSub').textContent = MGH.length ? `Seasons ${MGH[MGH.length - 1].n}–${MGH[0].n}, matched by Governor ID across name changes.` : '';
+}
+$('mghSel').innerHTML = '<option value="all">All seasons</option>' + MGH.map(m => `<option value="${m.n}">Season ${m.n} · ${dayLabel(m.d)}</option>`).join('');
+['mghSel', 'mghSearch'].forEach(id => $(id).addEventListener('input', renderMgh));
+$('mgeSel').innerHTML = (DATA.mges || []).slice().reverse().map(m => `<option value="${m.s}">${esc(m.l)}${m.f ? '' : ' (provisional)'}</option>`).join('') +
+  (MGH.length ? `<option value="history">Past seasons: top 10 (seasons ${MGH[MGH.length - 1].n}–${MGH[0].n})</option>` : '');
+['mgeSel', 'mgeSearch', 'mgeShow'].forEach(id => $(id).addEventListener('input', renderMge));
+
+// ---------- 20 GH (Gold Head) tab ----------
+// a 20 GH row: [rank, player index or null, name then, alliance tag, points, limit (null = no limit), over, fine]
+const GH = Object.fromEntries((DATA.ghs || []).map(g => [g.s, g]));
+const ghFine = (s, i, name) => F.find(f => f.t === 'gh' && f.wk === s && (i != null ? f.p === i : f.n === name));
+function renderGh() {
+  const g = GH[$('ghSel').value];
+  if (!g) { $('ghBody').innerHTML = '<tr><td colspan="8" class="empty">No 20 GH data yet.</td></tr>'; return; }
+  const q = $('ghSearch').value.trim().toLowerCase(), show = $('ghShow').value;
+  const name = r => r[1] != null ? P[r[1]].n : r[2];
+  const rows = g.r.filter(r => (!q || name(r).toLowerCase().includes(q) || r[2].toLowerCase().includes(q)) && (show === 'all' || r[6] > 0));
+  const fines = g.r.filter(r => r[7]).map(r => ghFine(g.s, r[1], r[2])).filter(Boolean);
+  const owed = fines.reduce((a, f) => a + Math.max(0, f.a - paidOf(f)), 0);
+  $('ghTiles').innerHTML = [
+    [short(g.c), `Point limit (${esc(g.ms)})`],
+    [fines.length, 'Players over the limit'],
+    [gold(fines.reduce((a, f) => a + f.a, 0)), 'Fines (gold value)'],
+    [gold(owed), 'Still unpaid (gold value)'],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('ghBody').innerHTML = rows.map(r => {
+    const f = r[7] ? ghFine(g.s, r[1], r[2]) : null;
+    return `<tr${r[1] != null ? ` data-i="${r[1]}"` : ''}><td class="num">${r[0]}</td><td>${esc(name(r))}</td>
+      <td>${r[3] ? esc(`[${r[3]}]`) : '<span class="muted">–</span>'}</td>
+      <td class="num">${r[5] == null ? 'No limit' : fmt(r[5])}</td><td class="num">${fmt(r[4])}</td>
+      <td class="num">${r[6] ? `<span class="below">${fmt(r[6])}</span>` : '<span class="muted">–</span>'}</td>
+      <td class="num">${r[7] ? gold(r[7]) : '–'}</td><td>${f ? fineStatus(f) + calcBtn(f) : '<span class="paid">OK</span>'}</td></tr>`;
+  }).join('') || '<tr><td colspan="8" class="empty">No players match.</td></tr>';
+  const free = g.r.filter(r => r[5] == null).map(name);
+  $('ghCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} · ranks 1–${g.r.length} captured`;
+  $('ghSub').textContent = `${g.l}${g.f ? '' : ' · PROVISIONAL ranking: fines are not final and cannot be marked paid yet'} · Mission: ${g.ms}. ` +
+    `Max ${fmt(g.c)} points per player${free.length ? ` (no limit: ${free.join(', ')})` : ''}. Fine per point over: ` +
+    `${Object.entries(DATA.ghFine).map(([r, v]) => fmt(v) + ' ' + r).join(' / ')} (one or a mix), paid to the bank KD.`;
+}
+$('ghSel').innerHTML = (DATA.ghs || []).slice().reverse().map(g => `<option value="${g.s}">${esc(g.l)}${g.f ? '' : ' (provisional)'}</option>`).join('');
+['ghSel', 'ghSearch', 'ghShow'].forEach(id => $(id).addEventListener('input', renderGh));
+// "Calculate" on an unpaid fine (20 GH and MGE tabs): that tab's calculator, filled with what is left of the fine
+['ghBody', 'mgeBody'].forEach(id => $(id).addEventListener('click', e => {
+  const b = e.target.closest('button[data-calc]'), f = b && F.find(f => f.id === b.dataset.calc);
+  if (f && calcs[f.t]) calcs[f.t].fill(f.a - paidOf(f));
+}));
+
+// ---------- Canyon Clash tab ----------
+// a Canyon Clash row: [rank, player index or null, name then, defenses, attacks used]; n = attacks each governor gets
+const CANYON = Object.fromEntries((DATA.canyons || []).map(c => [c.s, c]));
+const ccAttacks = (att, n) => att >= n ? `<span class="paid">${att}/${n}</span>` : `<span class="below">${att}/${n}</span>`;
+function renderCanyon() {
+  const c = CANYON[$('ccSel').value];
+  if (!c) { $('ccBody').innerHTML = '<tr><td colspan="5" class="empty">No Canyon Clash data yet.</td></tr>'; return; }
+  const q = $('ccSearch').value.trim().toLowerCase(), show = $('ccShow').value;
+  const name = r => r[1] != null ? P[r[1]].n : r[2];
+  const rows = c.r.filter(r => (!q || name(r).toLowerCase().includes(q) || r[2].toLowerCase().includes(q)) &&
+    (show === 'all' || (show === 'full') === (r[4] >= c.n)));
+  const full = c.r.filter(r => r[4] >= c.n).length, none = c.r.filter(r => !r[4]).length;
+  $('ccTiles').innerHTML = [
+    [c.r.length, 'Governors in the event'],
+    [full, `Used all ${c.n} attacks`],
+    [c.r.length - full - none, 'Used some attacks'],
+    [none, 'Used no attacks'],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('ccBody').innerHTML = rows.map(r => `<tr${r[1] != null ? ` data-i="${r[1]}"` : ''}><td class="num">${r[0]}</td><td>${esc(name(r))}</td>
+    <td class="num">${r[3]}</td><td class="num">${ccAttacks(r[4], c.n)}</td>
+    <td>${r[4] >= c.n ? '<span class="paid">All attacks used</span>' : `<span class="below">${c.n - r[4]} unused</span>`}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="empty">No players match.</td></tr>';
+  $('ccCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} of ${c.r.length}`;
+  $('ccSub').textContent = `${c.l} · ${c.n} attacks per governor · in-game order (defenses, highest first)`;
+}
+$('ccSel').innerHTML = (DATA.canyons || []).slice().reverse().map(c => `<option value="${c.s}">${esc(c.l)}</option>`).join('');
+['ccSel', 'ccSearch', 'ccShow'].forEach(id => $(id).addEventListener('input', renderCanyon));
+
+// ---------- Ark of Osiris tab ----------
+// an AoO row: [rank, player index or null, name then, points (0 = did not participate), kills or null]; sc = [our score, theirs]
+// f = false: a live ranking taken during the battle (w = '' as there is no result; players who never entered are not listed)
+const AOO = Object.fromEntries((DATA.aoos || []).map(a => [a.s, a]));
+const aooStatus = pts => !pts ? '<span class="below">Did not participate</span>'
+  : pts < DATA.aooMin ? `<span class="chip"><span class="dot" style="background:var(--warning)"></span>Warning: below ${fmt(DATA.aooMin)}</span>`
+  : '<span class="paid">OK</span>';
+function renderAoo() {
+  const a = AOO[$('aooSel').value];
+  if (!a) { $('aooBody').innerHTML = '<tr><td colspan="5" class="empty">No Ark of Osiris data yet.</td></tr>'; return; }
+  const q = $('aooSearch').value.trim().toLowerCase(), show = $('aooShow').value;
+  const name = r => r[1] != null ? P[r[1]].n : r[2];
+  const kind = r => !r[3] ? 'none' : r[3] < DATA.aooMin ? 'low' : 'ok';
+  const rows = a.r.filter(r => (!q || name(r).toLowerCase().includes(q) || r[2].toLowerCase().includes(q)) && (show === 'all' || kind(r) === show));
+  $('aooTiles').innerHTML = [
+    [a.w ? a.w[0].toUpperCase() + a.w.slice(1) : a.sc[0] > a.sc[1] ? 'Leading' : 'Trailing',
+      `${fmt(a.sc[0])} – ${fmt(a.sc[1])} vs ${esc(a.op)}${a.f ? '' : ' (during the battle)'}`],
+    [a.r.length, a.f ? 'Registered' : 'In the battle'],
+    [a.r.filter(r => r[3]).length, 'Participated'],
+    [a.f ? a.r.filter(r => kind(r) === 'none').length : '?', a.f ? 'Did not participate' : 'Did not participate (not shown during the battle)'],
+    [a.r.filter(r => kind(r) === 'low').length, `Below ${fmt(DATA.aooMin)} points`],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('aooBody').innerHTML = rows.map(r => `<tr${r[1] != null ? ` data-i="${r[1]}"` : ''}><td class="num">${r[0]}</td><td>${esc(name(r))}</td>
+    <td class="num">${r[3] ? fmt(r[3]) : '–'}</td><td class="num">${r[3] && r[4] != null ? fmt(r[4]) : '–'}</td><td>${aooStatus(r[3])}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="empty">No players match.</td></tr>';
+  $('aooCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} of ${a.r.length} ${a.f ? 'registered' : 'in the battle'}`;
+  $('aooSub').textContent = `${a.l} · ${a.tm} · ${a.f ? '' : `PROVISIONAL: ${a.nt}. `}Everyone registered is expected to play: 0 points = did not participate, below ${fmt(DATA.aooMin)} points = warning`;
+}
+$('aooSel').innerHTML = (DATA.aoos || []).slice().reverse().map(a => `<option value="${a.s}">${esc(a.l)} · ${esc(a.tm)}${a.f ? '' : ' (live ranking)'}</option>`).join('');
+['aooSel', 'aooSearch', 'aooShow'].forEach(id => $(id).addEventListener('input', renderAoo));
+
+// ---------- KvK roster tab ----------
+// DATA.rosters: [{k: KvK number, d: recorded, slots, r: [[player index or null, alliance, rank, name on roster, roster power]]}]
+const ROSTERS = DATA.rosters || [];
+const RANKS = {Leader: 0, R4: 1, R3: 2, R2: 3, R1: 4, '': 5};
+const NOALLY = 'No alliance';
+const krLoose = n => n.normalize('NFKC').replace(/[\s\u3000]/g, '').toLowerCase();
+function renderRosterKvk() {
+  const R = ROSTERS.find(x => String(x.k) === $('krSel').value);
+  if (!R) return;
+  const q = $('krSearch').value.trim().toLowerCase(), ally = $('krAlly').value, ty = $('krType').value;
+  const nm = r => r[0] != null ? P[r[0]].n : r[3];
+  const total = R.r.reduce((s, r) => s + r[4], 0);
+  const groups = {};
+  R.r.forEach(r => { (groups[r[1]] = groups[r[1]] || []).push(r); });
+  const allies = Object.entries(groups).map(([a, rs]) => ({a, rs, p: rs.reduce((s, r) => s + r[4], 0)}))
+    .sort((x, y) => (x.a === NOALLY) - (y.a === NOALLY) || y.p - x.p);
+  const farms = R.r.filter(r => r[0] != null && isFarm(P[r[0]])).length;
+  $('krTiles').innerHTML = [
+    [`${R.r.length}<span class="sub"> / ${R.slots}</span>`, 'Governors on the roster (slots)'],
+    [short(total), 'Total power'],
+    [short(Math.round(total / R.r.length)), 'Average power'],
+    [allies.filter(x => x.a !== NOALLY).length, 'Alliances with governors on it'],
+    [(groups[NOALLY] || []).length, 'Without an alliance'],
+    [farms, 'Farm accounts'],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('krAllySub').textContent = `KvK ${R.k} battle roster, recorded ${dayLabel(R.d)}. Power is each governor's power on the roster screen; the game's alliance power counts every member, not just the roster.`;
+  // horizontal bars: total power per alliance
+  const box = $('krChart'); box.innerHTML = '';
+  const W = 800, rh = 26, lw = 230, H = rh * allies.length + 4, mx = Math.max(...allies.map(x => x.p));
+  const svg = el('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Roster power by alliance'}, box);
+  allies.forEach((x, i) => {
+    const y = 2 + i * rh, w = Math.max(2, (W - lw - 90) * x.p / mx);
+    el('text', {x: lw - 8, y: y + rh / 2 + 4, 'text-anchor': 'end', class: 'lbl'}, svg).textContent = x.a.length > 30 ? x.a.slice(0, 29) + '…' : x.a;
+    const b = el('rect', {x: lw, y: y + 4, width: w, height: rh - 8, rx: 3, fill: x.a === NOALLY ? 'var(--text-muted)' : 'var(--series-1)'}, svg);
+    el('text', {x: lw + w + 6, y: y + rh / 2 + 4, class: 'lbl'}, svg).textContent = `${short(x.p)} · ${x.rs.length}`;
+    b.addEventListener('pointermove', ev => showTip(`<b>${esc(x.a)}</b><br>${x.rs.length} governor${x.rs.length === 1 ? '' : 's'} · ${fmt(x.p)} power<br>${(100 * x.p / total).toFixed(1)}% of the roster`, ev));
+    b.addEventListener('pointerleave', hideTip);
+  });
+  $('krAllyBody').innerHTML = allies.map(x => { const top = x.rs.slice().sort((a, b) => b[4] - a[4])[0];
+    return `<tr style="cursor:default"><td>${esc(x.a)}</td><td class="num">${x.rs.length}</td><td class="num">${fmt(x.p)}</td>
+    <td class="num">${(100 * x.p / total).toFixed(1)}%</td><td class="num">${short(Math.round(x.p / x.rs.length))}</td>
+    <td class="num">${esc(nm(top))} <span class="muted">${short(top[4])}</span></td></tr>`; }).join('') +
+    `<tr style="cursor:default"><td><b>Total</b></td><td class="num"><b>${R.r.length}</b></td><td class="num"><b>${fmt(total)}</b></td><td class="num">100%</td><td class="num">${short(Math.round(total / R.r.length))}</td><td></td></tr>`;
+  // roster, strongest first
+  const rows = R.r.map((r, i) => r).slice().sort((a, b) => b[4] - a[4]);
+  const shown = rows.map((r, i) => [i + 1, r]).filter(([, r]) => (ally === 'all' || r[1] === ally) &&
+    (ty === 'all' || (r[0] != null && (ty === 'farm') === isFarm(P[r[0]]))) &&
+    (!q || nm(r).toLowerCase().includes(q) || r[3].toLowerCase().includes(q) || (r[0] != null && String(P[r[0]].g).includes(q))));
+  $('krBody').innerHTML = shown.map(([i, r]) => { const p = r[0] != null ? P[r[0]] : null;
+    return `<tr${p ? ` data-i="${r[0]}"` : ' style="cursor:default"'}><td class="num">${i}</td>
+    <td>${esc(nm(r))}${p && krLoose(p.n) !== krLoose(r[3]) ? ` <span class="muted">(${esc(r[3])})</span>` : ''}</td><td>${esc(r[1])}</td><td>${r[2] || '–'}</td>
+    <td>${p ? typeTxt(p) : '–'}</td><td class="num">${fmt(r[4])}</td><td class="num">${p && p.pw != null ? short(p.pw) : '–'}</td></tr>`; }).join('')
+    || '<tr><td colspan="7" class="empty">No players match.</td></tr>';
+  $('krCount').textContent = `${shown.length} of ${R.r.length} governors · ${short(shown.reduce((s, [, r]) => s + r[4], 0))} power shown`;
+  $('krSub').textContent = 'Strongest first. Tap a row for the player. Names in brackets are the name on the roster when it differs from the current one.';
+}
+(function () {
+  if (!ROSTERS.length) return;
+  $('rosterTabBtn').hidden = false;
+  $('rosterTabBtn').textContent = ROSTERS.length === 1 ? `KvK ${ROSTERS[0].k} roster` : 'KvK roster';
+  $('krSel').innerHTML = ROSTERS.slice().reverse().map(R => `<option value="${R.k}">KvK ${R.k} · ${dayLabel(R.d)}</option>`).join('');
+  const fillAlly = () => { const R = ROSTERS.find(x => String(x.k) === $('krSel').value);
+    const names = [...new Set(R.r.map(r => r[1]))].sort((a, b) => (a === NOALLY) - (b === NOALLY) || a.localeCompare(b));
+    $('krAlly').innerHTML = '<option value="all">Every alliance</option>' + names.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join(''); };
+  fillAlly();
+  $('krSel').addEventListener('input', () => { fillAlly(); renderRosterKvk(); });
+  ['krSearch', 'krAlly', 'krType'].forEach(id => $(id).addEventListener('input', renderRosterKvk));
+})();
+
+// ---------- CH25 power tab ----------
+// DATA.power: ex = [[export date, top-N power of every governor]], r = [[player index, power in each export or null]]
+const PW = DATA.power || {ex: [], r: []};
+const pwSigned = v => (v > 0 ? '+' : v < 0 ? '−' : '') + short(Math.abs(v));
+const pwCls = v => v < 0 ? 'dn' : v > 0 ? 'up' : '';
+function pwRange() {
+  let a = +$('pwFrom').value, b = +$('pwTo').value;
+  if (a > b) [a, b] = [b, a];
+  return [a, b];
+}
+// one export: CH-level governors in it, top N of them by power
+function pwTotal(i, rows = PW.r) {
+  return rows.map(r => r[i + 1]).filter(v => v != null).sort((x, y) => y - x).slice(0, PW.top).reduce((s, v) => s + v, 0);
+}
+function renderPower() {
+  if (PW.ex.length < 2) { $('pwChart').innerHTML = '<div class="empty">Needs at least two member exports.</div>'; return; }
+  const [a, b] = pwRange(), idx = []; for (let i = a; i <= b; i++) idx.push(i);
+  const ex = PW.ex, lbl = i => dayLabel(ex[i][0]).replace(/ \d{4}$/, '');
+  const inEx = (r, i) => r[i + 1] != null;
+  const same = PW.r.filter(r => idx.every(i => inEx(r, i)));
+  const tot = idx.map(i => pwTotal(i)), coh = idx.map(i => same.reduce((s, r) => s + r[i + 1], 0));
+  const cnt = idx.map(i => PW.r.filter(r => inEx(r, i)).length);
+  const T = tot[tot.length - 1], d = T - tot[0], prev = tot.length > 1 ? T - tot[tot.length - 2] : 0;
+  const left = PW.r.filter(r => inEx(r, a) && !inEx(r, b)), joined = PW.r.filter(r => !inEx(r, a) && inEx(r, b));
+  const cohD = coh[coh.length - 1] - coh[0], leftD = -left.reduce((s, r) => s + r[a + 1], 0), joinD = joined.reduce((s, r) => s + r[b + 1], 0);
+  const topTxt = `top ${PW.top} CH${PW.ch}`;
+  $('pwTiles').innerHTML = [
+    [short(T), `CH${PW.ch} total power, ${lbl(b)} (${cnt[cnt.length - 1]} governors)`, ''],
+    [pwSigned(prev), `since the export before (${lbl(idx[Math.max(0, idx.length - 2)])})`, pwCls(prev)],
+    [`${pwSigned(d)} <span class="sub">${(100 * d / tot[0]).toFixed(1)}%</span>`, `${lbl(a)} → ${lbl(b)}`, pwCls(d)],
+    [pwSigned(cohD), `the same ${same.length} governors, ${lbl(a)} → ${lbl(b)}`, pwCls(cohD)],
+  ].map(([v, l, c]) => `<div class="tile"><div class="v ${c}">${v}</div><div class="l">${l}</div></div>`).join('');
+  const few = Math.max(...cnt) < PW.top;
+  $('pwSub').textContent = `Sum of Power of the ${topTxt} governors in each in-game member export.` +
+    (few ? ` Only ${Math.min(...cnt)}–${Math.max(...cnt)} CH${PW.ch} governors are in an export, so this is all of them.` : '') +
+    ` CH${PW.ch} = on a CH${PW.ch} roster; governors who reached CH${PW.ch} later count once a newer roster is imported.`;
+  $('pwL1').textContent = `All CH${PW.ch} in the kingdom (${topTxt})`;
+  $('pwL2').textContent = `Same ${same.length} governors (in every export shown), so arrivals and departures don't move it`;
+
+  // line chart: y axis fitted to the data (not from zero) so the movement is visible; tooltips carry the exact values
+  const box = $('pwChart'); box.innerHTML = '';
+  const W = 800, H = 300, m = {l: 54, r: 64, t: 12, b: 30}, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const svg = el('svg', {viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `CH${PW.ch} total power by export`}, box);
+  const all = tot.concat(coh), span = Math.max(...all) - Math.min(...all) || 1;
+  const step = niceMax(span / 4), lo = Math.floor((Math.min(...all) - span * .08) / step) * step, hi = Math.ceil((Math.max(...all) + span * .08) / step) * step;
+  const t0 = Date.parse(ex[a][0]), t1 = Date.parse(ex[b][0]) || t0 + 1;
+  const x = i => m.l + (t1 === t0 ? iw / 2 : (Date.parse(ex[i][0]) - t0) / (t1 - t0) * iw), y = v => m.t + (hi - v) / (hi - lo) * ih;
+  for (let v = lo; v <= hi + step / 2; v += step) {
+    el('line', {x1: m.l, x2: m.l + iw, y1: y(v), y2: y(v), stroke: 'var(--grid)', 'stroke-width': 1}, svg);
+    el('text', {x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end'}, svg).textContent = short(v);
+  }
+  let lastX = -99;
+  idx.forEach(i => { if (x(i) - lastX >= 44 || i === b) { el('text', {x: x(i), y: H - 8, 'text-anchor': 'middle'}, svg).textContent = lbl(i); lastX = x(i); } });
+  [[tot, 'var(--series-1)'], [coh, 'var(--series-2)']].forEach(([vals, c]) => {
+    el('path', {d: vals.map((v, k) => (k ? 'L' : 'M') + x(idx[k]) + ' ' + y(v)).join(''), fill: 'none', stroke: c, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, svg);
+    vals.forEach((v, k) => el('circle', {cx: x(idx[k]), cy: y(v), r: k === vals.length - 1 ? 4.5 : 3, fill: c, stroke: 'var(--surface-1)', 'stroke-width': 2}, svg));
+    el('text', {x: m.l + iw + 8, y: y(vals[vals.length - 1]) + 4, class: 'lbl'}, svg).textContent = short(vals[vals.length - 1]);
+  });
+  const cross = el('line', {y1: m.t, y2: m.t + ih, stroke: 'var(--text-muted)', 'stroke-dasharray': '3 3', visibility: 'hidden'}, svg);
+  const hit = el('rect', {x: m.l - 16, y: 0, width: iw + 32, height: H, fill: 'transparent'}, svg);
+  hit.addEventListener('pointermove', ev => {
+    const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * W;
+    let k = 0; idx.forEach((i, j) => { if (Math.abs(x(i) - px) < Math.abs(x(idx[k]) - px)) k = j; });
+    cross.setAttribute('x1', x(idx[k])); cross.setAttribute('x2', x(idx[k])); cross.setAttribute('visibility', 'visible');
+    const ch = (vals, cls = v => pwCls(v)) => k ? ` <span class="${cls(vals[k] - vals[k - 1])}">${pwSigned(vals[k] - vals[k - 1])}</span>` : '';
+    showTip(`<b>${dayLabel(ex[idx[k]][0])}</b><br>All CH${PW.ch}: ${short(tot[k])} (${cnt[k]})${ch(tot)}<br>Same ${same.length}: ${short(coh[k])}${ch(coh)}`, ev);
+  });
+  hit.addEventListener('pointerleave', () => { hideTip(); cross.setAttribute('visibility', 'hidden'); });
+
+  // where the change came from: left, joined, same governors, everyone else (in a and b but missed one in between)
+  const parts = [[`Left (${left.length})`, leftD], [`Joined (${joined.length})`, joinD], [`Same ${same.length}`, cohD]];
+  const rest = d - leftD - joinD - cohD; if (Math.abs(rest) >= 1e5) parts.push(['Others', rest]);
+  parts.push(['Net change', d]);
+  $('pwBridgeSub').textContent = `CH${PW.ch} total, ${lbl(a)} → ${lbl(b)}` + (parts.some(p => p[0] === 'Others') ? '. Others = in both exports but missing from one in between.' : '');
+  const bb = $('pwBridge'); bb.innerHTML = '';
+  const BW = 460, rh = 34, bm = {l: 170, r: 8}, BH = rh * parts.length + 6;
+  const bs = el('svg', {viewBox: `0 0 ${BW} ${BH}`, role: 'img', 'aria-label': 'Breakdown of the change'}, bb);
+  const mn = Math.min(0, ...parts.map(p => p[1])), mx = Math.max(0, ...parts.map(p => p[1])), bx = v => bm.l + (v - mn) / ((mx - mn) || 1) * (BW - bm.l - bm.r);
+  el('line', {x1: bx(0), x2: bx(0), y1: 0, y2: BH, stroke: 'var(--border)'}, bs);
+  parts.forEach(([k, v], i) => {
+    const yy = 4 + i * rh, h = rh - 12, net = i === parts.length - 1;
+    el('text', {x: 0, y: yy + h / 2 + 4, class: 'lbl', 'font-weight': net ? 650 : 400}, bs).textContent = k;
+    el('rect', {x: Math.min(bx(v), bx(0)), y: yy, width: Math.max(Math.abs(bx(v) - bx(0)), 1), height: h, rx: 3, fill: v < 0 ? 'var(--critical)' : 'var(--good)', opacity: net ? 1 : .75}, bs);
+    el('text', {x: bm.l - 10, y: yy + h / 2 + 4, 'text-anchor': 'end', class: 'lbl', 'font-weight': net ? 650 : 400}, bs).textContent = pwSigned(v);  // value column, clear of the bars
+  });
+
+  $('pwThN').textContent = `CH${PW.ch} governors`; $('pwThT').textContent = `CH${PW.ch} total`; $('pwThA').textContent = `Top ${PW.top} overall`;
+  $('pwExBody').innerHTML = idx.map((i, k) => `<tr style="cursor:default"><td>${dayLabel(ex[i][0])}</td><td class="num">${cnt[k]}</td><td class="num">${short(tot[k])}</td>
+    <td class="num">${k ? `<span class="${pwCls(tot[k] - tot[k - 1])}">${pwSigned(tot[k] - tot[k - 1])}</span>` : '–'}</td><td class="num">${short(ex[i][1])}</td></tr>`).join('');
+
+  // governors: power at a and b
+  const q = $('pwSearch').value.trim().toLowerCase(), show = $('pwShow').value;
+  const kind = r => !inEx(r, b) ? (inEx(r, a) ? 'left' : 'out') : !inEx(r, a) ? 'joined' : r[b + 1] < r[a + 1] ? 'down' : r[b + 1] > r[a + 1] ? 'up' : 'same';
+  const delta = r => (r[b + 1] || 0) - (r[a + 1] || 0);
+  const rows = PW.r.filter(r => kind(r) !== 'out' && (!q || P[r[0]].n.toLowerCase().includes(q)) && (show === 'all' || kind(r) === show))
+    .sort((p, q2) => delta(p) - delta(q2));
+  $('pwThFrom').textContent = lbl(a); $('pwThTo').textContent = lbl(b);
+  $('pwGovSub').textContent = `CH${PW.ch} governors in the ${lbl(a)} or ${lbl(b)} export, biggest drop first. Tap a row for the player.`;
+  const st = {left: '<span class="below">Left the kingdom</span>', joined: '<span class="paid">Joined</span>', down: '', up: '', same: ''};
+  $('pwBody').innerHTML = rows.map(r => `<tr data-i="${r[0]}"><td>${esc(P[r[0]].n)}</td><td class="num">${short(r[a + 1])}</td><td class="num">${short(r[b + 1])}</td>
+    <td class="num"><span class="${pwCls(delta(r))}">${pwSigned(delta(r))}</span></td><td>${st[kind(r)]}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="empty">No players match.</td></tr>';
+  $('pwCount').textContent = `${rows.length} governor${rows.length === 1 ? '' : 's'}`;
+}
+const pwOpts = PW.ex.map(([d], i) => `<option value="${i}">${dayLabel(d)}</option>`).join('');
+$('pwFrom').innerHTML = pwOpts; $('pwTo').innerHTML = pwOpts;
+$('pwFrom').value = 0; $('pwTo').value = Math.max(0, PW.ex.length - 1);
+['pwFrom', 'pwTo', 'pwSearch', 'pwShow'].forEach(id => $(id).addEventListener('input', renderPower));
+
+// ---------- multi-select (R4 mode): change many accounts at once ----------
+const picked = new Set();  // player indexes ticked in the master list
+let rosterShown = [];      // selectable rows currently shown (for "select all")
+function renderBulk() {
+  const n = picked.size, verb = approver ? 'Set as' : 'Propose';
+  $('bulkBar').hidden = !officer || !n;
+  $('bulkBar').innerHTML = `<b>${n} selected</b>
+    <button class="act" data-bulk="farm" type="button">${verb} farm</button>
+    <button class="act" data-bulk="main" type="button">${verb} main</button>
+    <button class="act ghost" data-bulk="clear" type="button">Clear</button>`;
+  $('rosterAll').checked = rosterShown.length > 0 && rosterShown.every(p => picked.has(P.indexOf(p)));
+}
+$('rosterBody').addEventListener('change', e => {
+  const c = e.target.closest('input[data-sel]');
+  if (!c) return;
+  c.checked ? picked.add(+c.dataset.sel) : picked.delete(+c.dataset.sel);
+  renderBulk();
+});
+$('rosterAll').addEventListener('change', e => {
+  rosterShown.forEach(p => e.target.checked ? picked.add(P.indexOf(p)) : picked.delete(P.indexOf(p)));
+  renderRoster();
+});
+// Saves: the button says "Saving…" while the (sometimes slow) web app answers; once it confirms, the page shows
+// the change at once and refreshes everything from the sheet in the background.
+function saving(b) { b.disabled = true; b.dataset.label = b.textContent; b.textContent = 'Saving…'; }
+function notSaved(b, err) { alert('Not saved: ' + err.message + '. Try again.'); b.disabled = false; b.textContent = b.dataset.label; }
+function saved() { renderMge(); renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMigrate(); loadLedger(); }
+function typeSaved(ids, type, approved) {
+  const now = new Date().toISOString();
+  ids.forEach(id => { changes[id] = approved ? {type, by: officer, decided: now} : {...changes[id], pending: {type, by: officer, time: now}}; });
+}
+
+$('bulkBar').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-bulk]');
+  if (!b) return;
+  if (b.dataset.bulk === 'clear') { picked.clear(); return renderRoster(); }
+  const type = b.dataset.bulk, list = [...picked].map(i => P[i]).filter(p => p.t !== type || !p.c);
+  if (!list.length) return alert(`All selected accounts are already confirmed as ${type}.`);
+  const names = list.slice(0, 12).map(p => p.n).join(', ') + (list.length > 12 ? ` and ${list.length - 12} more` : '');
+  if (!confirm(`${approver ? 'Set' : 'Propose'} ${list.length} account${list.length === 1 ? '' : 's'} as ${type}?\n\n${names}` +
+      (approver ? `\n\nEvery week is recalculated with the ${type} rules.` : '\n\nAn approver has to approve them.'))) return;
+  saving(b);
+  try {
+    const r = await fetch(DATA.finesUrl, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({key: r4key, action: type, accounts: list.map(p => ({account_id: p.id, player: p.n}))})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not saved');
+    alert(j.approved ? `Saved ${j.count}. The dashboard updates ${String(j.recalc).startsWith('started') ? 'in a few minutes' : 'within the hour'}.`
+      : `Proposed ${j.count}. An approver will review them.`);
+    picked.clear();
+    typeSaved(list.map(p => p.id), type, j.approved);
+    saved();
+  } catch (err) { notSaved(b, err); }
+});
+
+// ---------- review (R4 mode) ----------
+function renderReview() {
+  const pend = P.filter(p => typeState(p) === 'pending');
+  const canDecide = c => approver || (officer && c.pub);  // R4 proposals need an approver; players' ones any R4
+  $('pendBody').innerHTML = pend.map(p => { const c = changes[p.id].pending;
+    const act = !officer ? '' : !canDecide(c) ? '<td><span class="muted">Approver decides</span></td>' : `<td style="white-space:nowrap"><button class="act" data-decide="approve" data-i="${P.indexOf(p)}" type="button">Approve</button> <button class="act ghost" data-decide="reject" data-i="${P.indexOf(p)}" type="button">Reject</button></td>`;
+    return `<tr data-i="${P.indexOf(p)}"><td>${esc(p.n)}</td>${act}<td>${typeTxt(p)} → <b>${c.type === p.t ? 'confirm ' + c.type : c.type}</b></td><td style="white-space:normal">${esc(c.by)}${c.note ? `<br><span class="muted">“${esc(c.note)}”</span>` : ''}</td><td>${c.time.slice(0, 10)}</td></tr>`; }).join('') ||
+    `<tr><td colspan="${officer ? 5 : 4}" class="empty">Nothing waiting.</td></tr>`;
+  $('pendActTh').hidden = !officer;
+  const queue = P.filter(p => inQueue(p) && !typeState(p))
+    .sort((a, b) => strong(b) - strong(a) || (b.h || []).length - (a.h || []).length || (b.pw || 0) - (a.pw || 0));
+  $('queueBody').innerHTML = queue.map(p => `<tr data-i="${P.indexOf(p)}"><td>${esc(p.n)}</td><td style="white-space:nowrap">${typeButtons(p)}</td>
+      <td>${typeTxt(p)}</td><td class="num">${short(p.pw)}</td><td class="num">${short(p.kp)}</td>
+      <td style="white-space:normal;min-width:180px">${(p.h || []).map(esc).join('<br>') || '<span class="muted">–</span>'}</td></tr>`).join('') ||
+    '<tr><td colspan="6" class="empty">Every account is confirmed.</td></tr>';
+  $('queueCount').textContent = `${queue.length} account${queue.length === 1 ? '' : 's'} to check`;
+  $('reviewCount').textContent = officer && (queue.length + pend.length) ? queue.length + pend.length : '';
+}
+
+function renderTable() {
+  const q = $('tableSearch').value.trim().toLowerCase(), type = $('typeSel').value, off = $('offSel').value;
+  const rows = P.filter(p => p.w[week]).map(p => ({p, n: p.n, t: typeTxt(p), ...p.w[week]})).filter(r =>
+    (type === 'all' || r.p.t === type) && (!q || r.n.toLowerCase().includes(q)) &&
+    (off === 'all' || (off === 'fail' && r.f < DATA.minF) || (off === 'tech' && r.x != null && r.x < DATA.minT) || (off === '2' && r.o >= 2)));
+  rows.sort((a, b) => {
+    const va = a[sortK] ?? -1, vb = b[sortK] ?? -1;
+    return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
+  });
+  $('tbody').innerHTML = rows.map((r, i) => `<tr data-i="${P.indexOf(r.p)}">
+      <td>${esc(r.n)}</td><td>${r.t}${changes[r.p.id] && changes[r.p.id].pending ? ` <span class="muted">(${changes[r.p.id].pending.type}?)</span>` : ''}</td>
+      <td class="num ${r.f < DATA.minF ? 'below' : ''}">${fmt(r.f)}</td>
+      <td class="num ${r.x != null && r.x < DATA.minT ? 'below' : ''}">${r.x == null ? '<span class="muted">not captured</span>' : fmt(r.x)}</td>
+      <td>${isFarm(r.p) ? '<span class="muted">Farm</span>' : chip(r.o, false)}</td>
+      <td class="num">${r.d ? gold(r.d) : '–'}</td></tr>`).join('') ||
+    '<tr><td colspan="6" class="empty">No players match.</td></tr>';
+  $('tableCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} · ${weekLabel(week)} · ▼ = below minimum`;
+}
+
+// ---------- fines ledger (Apps Script web app; R4s write with a personal ?key= link) ----------
+const F = DATA.fines || [];
+let ledger = null, officer = null, approver = false, r4key = null;  // ledger: {fine_id: {amount, by, time}} once loaded
+let changes = {};  // account_id -> {type, by, decided, pending: {type, by, time}} from the ledger
+// account_id -> {m: 'must' | 'revoke', mb, mt, out: {by, time}, z: times zeroed, zt: last zeroed} (Migrate tab of the ledger)
+let mig = {}, zeroList = [];  // zeroList (R4 mode only): [{ref, account_id, player, by, time, note}], oldest first
+const paidOf = f => (f.h || 0) + (ledger && ledger[f.id] ? ledger[f.id].amount : 0);
+const shownFines = () => F;  // every fine, fort and MGE (MGE opened to everyone on 25 Oct 2026)
+// MGE and 20 GH fines carry e (event label), t (kind) and m = points over the limit; fort fines have m = missing forts
+const ORD = n => n + (['th', 'st', 'nd', 'rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] || 'th');
+// Fine label: the MGE event, or "Weekly Fort 12–18 Oct 2nd Offense" (o = offense number of a fort fine)
+const fineLabel = f => f.e || `Weekly Fort ${weekLabel(f.wk)}` + (f.o ? ` ${ORD(f.o)} Offense` : '');
+const fineWhen = f => esc(fineLabel(f));
+// Event of a fine for the Fines filter: "mge:<start>", "gh:<start>" or "fort:<monday>"; label without the offense number
+const fineEv = f => (f.t || 'fort') + ':' + f.wk;
+const fineEvLabel = f => f.e || `Weekly Fort ${weekLabel(f.wk)} ${f.wk.slice(0, 4)}`;
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+const fineWhy = f => f.e ? `${fmt(f.m)} pts over` : `${f.m} forts short`;
+const unpaidOf = p => ledger ? shownFines().filter(f => P[f.p] === p).reduce((a, f) => a + Math.max(0, f.a - paidOf(f)), 0) : p.u;
+
+// R4 mode only while ?key= is in the address; nothing is stored, so the plain link is always read-only.
+function readKey() {
+  r4key = new URLSearchParams(location.search).get('key');
+  try { localStorage.removeItem('r4key'); } catch (e) {}  // drop keys saved by the earlier version of this page
+}
+function forgetKey() { location.href = location.pathname; }
+
+// Instant R4 check: the page carries the SHA-256 of each active key (never the key), so R4 mode does not wait
+// for the Google web app, which can take a minute to answer. The web app still checks the real key on every write.
+async function identify() {
+  if (!r4key || !window.crypto || !crypto.subtle) return false;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(r4key));
+  const h = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  const o = (DATA.officers || []).find(o => o.h === h);
+  if (o) { officer = o.n; approver = !!o.a; }
+  return !!o;
+}
+
+// Live payments and account changes from the web app (slow at times: 60 s timeout, one retry). Until it answers,
+// the page shows the copy published with it (DATA.ledger).
+async function loadLedger() {
+  if (!DATA.finesUrl) return;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const r = await fetch(DATA.finesUrl + (r4key ? '?key=' + encodeURIComponent(r4key) : ''),
+        AbortSignal.timeout ? {signal: AbortSignal.timeout(60000)} : {});
+      const j = await r.json();
+      ledger = j.paid || {}; changes = j.accounts || {}; claims = j.claims || {}; claimList = j.claimList || [];
+      if (j.migrate) mig = j.migrate;  // older web app versions have no Migrate tab: keep the published copy
+      zeroList = j.zeroList || [];
+      if (r4key) { officer = j.officer || null; approver = !!j.approver; }
+      break;
+    } catch (e) {
+      if (attempt === 2) $('finesSub').textContent = `Could not reach the ledger just now; showing data from the last update (${DATA.updated}).`;
+    }
+  }
+  renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMge(); renderMigrate();
+}
+
+function renderOfficer() {
+  const bar = $('officerBar');
+  bar.hidden = !r4key || !ledger;
+  bar.classList.toggle('bad', !officer);
+  bar.innerHTML = officer
+    ? `<span>Logged in as <b>${esc(officer)}</b> (R4${approver ? ', approver' : ''}) · mark payments in <a href="#t=fines">Fines</a>, check accounts in <a href="#t=review">Review</a>, record zeros in <a href="#t=migrate">Must migrate</a>.</span><button class="act ghost" id="logoutBtn" type="button">Leave R4 mode</button>`
+    : `<span>This R4 link is not valid or has been revoked. Ask the admin for a new one.</span><button class="act ghost" id="logoutBtn" type="button">Dismiss</button>`;
+  const b = $('logoutBtn'); if (b) b.addEventListener('click', forgetKey);
+  $('finesActTh').hidden = !officer;
+  $('reviewTabBtn').hidden = !officer;
+}
+
+function renderFines() {
+  renderClaims();
+  const q = $('finesSearch').value.trim().toLowerCase(), sel = $('finesSel').value, ev = $('finesEv').value, off = $('finesOff').value;
+  const rows = shownFines().map(f => ({f, paid: paidOf(f), name: f.p != null ? P[f.p].n : f.n}))
+    .filter(r => (!q || r.name.toLowerCase().includes(q) || r.f.n.toLowerCase().includes(q)) &&
+      (sel === 'all' || (sel === 'paid') === (r.paid >= r.f.a)) &&
+      (ev === 'all' || (ev === 'fort' ? !r.f.e : fineEv(r.f) === ev)) &&
+      (off === 'all' || (!r.f.e && String(r.f.o) === off)))
+    .sort((a, b) => b.f.wk.localeCompare(a.f.wk) || b.f.a - a.f.a);
+  $('finesBody').innerHTML = rows.map(({f, paid, name}) => {
+    const l = ledger && ledger[f.id], full = paid >= f.a;
+    const status = (full ? `<span class="paid">✓ Paid</span>${l ? ` <span class="muted">${esc(l.by)}, ${l.time.slice(0, 10)}</span>` : ''}`
+      : paid ? `${gold(paid)} of ${gold(f.a)} paid${l ? ` <span class="muted">${esc(l.by)}</span>` : ''}` : '<span class="below">Unpaid</span>') +
+      (full ? '' : claimStatus(f));
+    const act = !officer ? '' : f.pv ? '<td><span class="muted">Provisional</span></td>' : `<td>${l ? `<button class="act ghost" data-undo="${f.id}" type="button">Undo</button>`
+      : `<button class="act" data-pay="${f.id}" type="button">Mark paid</button>`}</td>`;
+    return `<tr${f.p != null ? ` data-i="${f.p}"` : ''}><td>${esc(name)}</td>${act}<td>${fineWhen(f)}</td><td class="num">${fineWhy(f)}</td><td class="num">${gold(f.a)}</td><td>${status}</td></tr>`;
+  }).join('') || `<tr><td colspan="${officer ? 6 : 5}" class="empty">No fines match.</td></tr>`;
+  const owed = shownFines().reduce((a, f) => a + Math.max(0, f.a - paidOf(f)), 0);
+  $('finesCount').textContent = `${rows.length} fine${rows.length === 1 ? '' : 's'} · ${gold(owed)} gold still unpaid in total` +
+    (ledger ? '' : ' (last published totals)');
+}
+
+// Farm/main status from the ledger: proposals wait for the admin; approved ones show until the recalculation lands.
+function typeState(p) {
+  const c = changes[p.id] || {};
+  return c.pending ? 'pending' : c.type && (c.type !== p.t || !p.c) ? 'approved' : '';
+}
+function typeButtons(p) {
+  if (p.r || typeState(p) || p.x) return '';
+  const i = P.indexOf(p), other = isFarm(p) ? 'main' : 'farm';
+  if (!officer)  // players suggest; any R4 approves or rejects it in Review
+    return DATA.finesUrl ? `<button class="act ghost" data-suggest="${other}" data-i="${i}" type="button">Suggest ${other}</button>` : '';
+  return (p.c ? '' : `<button class="act" data-type="${p.t}" data-i="${i}" type="button">Confirm ${p.t}</button> `) +
+    `<button class="act ghost" data-type="${other}" data-i="${i}" type="button">${approver ? 'Set as' : 'Propose'} ${other}</button>`;
+}
+function typeNote(p) {
+  const c = changes[p.id] || {}, st = typeState(p);
+  const note = st === 'pending' ? `<span class="chip"><span class="dot" style="background:var(--warning)"></span>Proposed: ${c.pending.type === p.t ? 'confirm ' + c.pending.type : c.pending.type} · by ${esc(c.pending.by)}, waiting for approval</span>`
+    : st === 'approved' ? `<span class="chip"><span class="dot" style="background:var(--series-1)"></span>Approved as ${c.type} · recalculating, check back in a few minutes</span>`
+    : c.type === p.t && c.decided ? `<span class="chip">Set as ${c.type} on ${dayLabel(c.decided.slice(0, 10))}${c.approvedBy ? ` by ${esc(c.approvedBy)}` : ''}${c.by && c.by !== c.approvedBy ? ` (proposed by ${esc(c.by)})` : ''}</span>` : '';
+  return note + ' ' + typeButtons(p);
+}
+
+// ---------- must migrate (any R4 marks; everyone sees the list) ----------
+// On the list: a 4th+ fort offense now (automatic), or marked by an R4. A revoke lifts both; for a 4th offense only
+// until the next failed week. "Migrated out" moves the account to its own list.
+const isoDay = d => d.toISOString().slice(0, 10);
+const weekEnd = wk => isoDay(new Date(new Date(wk + 'T00:00:00Z').getTime() + 6 * 864e5));
+const lastFail = p => weeks.filter(w => p.w[w] && p.w[w].o >= 4).pop();  // last week with a 4th+ offense
+const autoMust = p => !isFarm(p) && p.o >= 4 && !!lastFail(p);
+function migState(p) {
+  const m = mig[p.id] || {};
+  if (m.out || p.em) return 'out';  // p.em = emigrated per the in-game Immigration Log
+  if (m.m === 'must') return 'manual';
+  if (!autoMust(p)) return '';
+  return m.m === 'revoke' && m.mt.slice(0, 10) > weekEnd(lastFail(p)) ? 'revoked' : 'auto';
+}
+const onMigList = p => ['auto', 'manual'].includes(migState(p));
+const zeroTxt = m => m && m.z ? `${m.z}× zeroed · last ${dayLabel(m.zt.slice(0, 10))}` : '';
+function migChip(p) {
+  const st = migState(p), m = mig[p.id] || {};
+  return st === 'out' ? `<span class="chip"><span class="dot" style="background:var(--text-secondary)"></span>Migrated out</span>`
+    : st ? `<span class="chip"><span class="dot" style="background:${st === 'revoked' ? 'var(--good)' : 'var(--critical)'}"></span>${st === 'revoked' ? 'Must migrate lifted' : '✕ Must migrate'}</span>`
+    : '';
+}
+// R4 buttons; compact = the master list (just must migrate / revoke)
+function migButtons(p, compact) {
+  if (!officer || p.x) return '';
+  const i = P.indexOf(p), st = migState(p), b = (op, label, cls = 'ghost') => `<button class="act ${cls}" data-mig="${op}" data-i="${i}" type="button">${label}</button>`;
+  if (st === 'out') return compact ? '' : b('back', 'Undo migrated out');
+  const must = onMigList(p) ? b('revoke', compact ? 'Revoke must migrate' : 'Revoke') : b('must', 'Must migrate', compact ? 'ghost' : 'warn');
+  return compact ? must : must + ' ' + b('out', 'Migrated out') + ' ' + b('zero', 'Record zero', 'warn');
+}
+function migNote(p) {
+  const st = migState(p), m = mig[p.id] || {}, lf = lastFail(p);
+  const why = [
+    st === 'out' ? `Migrated out · marked by ${esc(m.out.by)}, ${dayLabel(m.out.time.slice(0, 10))}` : '',
+    autoMust(p) && st !== 'out' ? `${ORD(p.o)} fort offense (${weekLabel(lf)})` : '',
+    m.m === 'must' ? `Marked must migrate by ${esc(m.mb)}, ${dayLabel(m.mt.slice(0, 10))}` : '',
+    m.m === 'revoke' && (st === 'revoked' || autoMust(p)) ? `Lifted by ${esc(m.mb)}, ${dayLabel(m.mt.slice(0, 10))}` + (st === 'auto' ? ', before a later failed week' : '') : '',
+    zeroTxt(m)].filter(Boolean);
+  const zs = officer ? zeroList.filter(z => z.account_id === p.id) : [];
+  if (!why.length && !officer) return '';
+  return `<div class="p-sec">Must migrate</div>
+    <div class="p-meta">${migChip(p) || '<span class="muted">Not on the list</span>'}${why.map(w => `<span>${w}</span>`).join('')}</div>
+    ${officer && !p.x ? `<div class="acts" style="margin-top:8px">${migButtons(p)}</div>` : ''}
+    ${zs.length ? `<div class="table-wrap"><table class="kv"><thead><tr><th>Zeroed on</th><th>Recorded by</th><th>Note</th><th></th></tr></thead>
+      <tbody>${zs.slice().reverse().map(z => zeroRow(z, false)).join('')}</tbody></table></div>` : ''}`;
+}
+const zeroRow = (z, withName) => { const i = P.findIndex(p => p.id === z.account_id);
+  return `<tr style="cursor:default"><td>${dayLabel(z.time.slice(0, 10))} <span class="muted">${z.time.slice(11, 16)} UTC</span></td>
+    ${withName ? `<td>${i >= 0 ? `<a href="#t=migrate&p=${encodeURIComponent(P[i].n)}">${esc(P[i].n)}</a>` : esc(z.player)}</td>` : ''}
+    <td>${esc(z.by)}</td><td style="white-space:normal">${z.note ? esc(z.note) : '<span class="muted">–</span>'}</td>
+    <td>${i >= 0 ? `<button class="act ghost" data-mig="zero_undo" data-ref="${esc(z.ref)}" data-i="${i}" type="button">Undo</button>` : ''}</td></tr>`; };
+
+// Immigration log rows: [date, time UTC, 'in'/'out', name in the log, player index or null, special immigration]
+const IMM = DATA.immig || [];
+function renderImm() {
+  const q = $('immSearch').value.trim().toLowerCase(), show = $('immShow').value;
+  const name = r => r[4] != null ? P[r[4]].n : r[3];
+  const rows = IMM.filter(r => (show === 'all' || r[2] === show) && (!q || name(r).toLowerCase().includes(q) || r[3].toLowerCase().includes(q)));
+  $('immBody').innerHTML = rows.map(r => `<tr${r[4] != null ? ` data-i="${r[4]}"` : ' style="cursor:default"'}><td style="font-variant-numeric:tabular-nums">${dayLabel(r[0])} <span class="muted">${r[1]}</span></td>
+    <td>${r[4] != null ? esc(name(r)) : '<span class="muted">not matched</span>'}</td><td>${r[4] != null && name(r) === r[3] ? '<span class="muted">same</span>' : esc(r[3])}</td>
+    <td>${r[2] === 'out' ? '<span class="below">Emigrated out</span>' : `<span class="paid">Entered${r[5] ? ' (special immigration)' : ''}</span>`}</td></tr>`).join('')
+    || `<tr><td colspan="4" class="empty">${IMM.length ? 'No players match.' : 'No immigration log imported yet.'}</td></tr>`;
+  const outs = IMM.filter(r => r[2] === 'out').length;
+  $('immSub').textContent = IMM.length ? `From the in-game Immigration Log, ${dayLabel(IMM[IMM.length - 1][0])} – ${dayLabel(IMM[0][0])}: ${outs} emigrated, ${IMM.length - outs} entered. An emigration counts as migrated out.` : '';
+  $('immCount').textContent = `${rows.length} of ${IMM.length} shown`;
+}
+['immSearch', 'immShow'].forEach(id => $(id).addEventListener('input', renderImm));
+function renderMigrate() {
+  renderImm();
+  const q = $('migSearch').value.trim().toLowerCase(), show = $('migShow').value;
+  const list = P.filter(onMigList), out = P.filter(p => migState(p) === 'out');
+  const rows = list.filter(p => matches(p, q) && (show === 'all' || (show === 'zeroed' ? (mig[p.id] || {}).z :
+    show === 'auto' ? migState(p) === 'auto' || autoMust(p) : (mig[p.id] || {}).m === 'must')))
+    .sort((a, b) => ((mig[b.id] || {}).z || 0) - ((mig[a.id] || {}).z || 0) || b.o - a.o || a.n.localeCompare(b.n));
+  const lw = weeks[weeks.length - 1], forts = p => p.w[lw] ? `<span class="${p.w[lw].f < DATA.minF ? 'below' : ''}">${p.w[lw].f}</span>` : '<span class="muted">–</span>';
+  $('migBody').innerHTML = rows.map(p => { const m = mig[p.id] || {}, lf = lastFail(p);
+    const why = [autoMust(p) ? `${ORD(p.o)} offense · ${weekLabel(lf)}` : '', m.m === 'must' ? `Marked by ${esc(m.mb)} · ${dayLabel(m.mt.slice(0, 10))}` : '']
+      .filter(Boolean).join('<br>');
+    return `<tr data-i="${P.indexOf(p)}"><td>${esc(p.n)}</td>${officer ? `<td><div class="acts">${migButtons(p)}</div></td>` : ''}
+      <td class="muted" style="font-variant-numeric:tabular-nums">${p.g || 'no ID'}</td><td>${why}</td><td class="num">${forts(p)}</td>
+      <td class="num">${unpaidOf(p) ? gold(unpaidOf(p)) : '–'}</td><td class="num">${m.z || '–'}</td>
+      <td>${m.zt ? dayLabel(m.zt.slice(0, 10)) : '<span class="muted">–</span>'}</td></tr>`; }).join('') ||
+    `<tr><td colspan="${officer ? 9 : 8}" class="empty">${list.length ? 'No players match.' : 'Nobody has to migrate.'}</td></tr>`;
+  const outDay = p => (mig[p.id] || {}).out ? mig[p.id].out.time.slice(0, 10) : p.em;
+  $('migOutBody').innerHTML = out.sort((a, b) => outDay(b).localeCompare(outDay(a))).map(p => { const m = mig[p.id] || {};
+    return `<tr data-i="${P.indexOf(p)}"><td>${esc(p.n)}</td>${officer ? `<td>${migButtons(p)}</td>` : ''}
+      <td class="muted" style="font-variant-numeric:tabular-nums">${p.g || 'no ID'}</td><td>${m.out ? esc(m.out.by) : '<span class="muted">Immigration log</span>'}</td>
+      <td>${dayLabel(outDay(p))}</td><td class="num">${m.z || '–'}</td></tr>`; }).join('') ||
+    `<tr><td colspan="${officer ? 6 : 5}" class="empty">Nobody marked yet.</td></tr>`;
+  $('migActTh').hidden = $('migOutActTh').hidden = !officer;
+  const zeroed = Object.values(mig).filter(m => m.z);
+  $('migTiles').innerHTML = [
+    [list.length, 'Must migrate now'],
+    [gold(list.reduce((a, p) => a + unpaidOf(p), 0)), 'Their unpaid fines (gold)'],
+    [out.length, 'Migrated out'],
+    [zeroed.reduce((a, m) => a + m.z, 0), `Zeros recorded · ${zeroed.length} account${zeroed.length === 1 ? '' : 's'}`],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('migCount').textContent = list.length || '';
+  $('migListCount').textContent = `${rows.length} of ${list.length} shown`;
+  $('migSub').textContent = `Main accounts at their 4th fort offense (or later) and accounts an R4 marked. Failure to migrate means the account is zeroed. ` +
+    `An R4 can lift it (a 4th offense comes back with the next failed week) or mark the account as migrated out once it has left.` +
+    (officer ? ' Record each zero with "Record zero"; the count shows for everyone, who did it only for R4s.' : '');
+  $('zeroCard').hidden = !officer;
+  if (officer) {
+    const by = {};
+    zeroList.forEach(z => { by[z.by] = (by[z.by] || 0) + 1; });
+    $('zeroByOfficer').innerHTML = Object.entries(by).sort((a, b) => b[1] - a[1])
+      .map(([n, c]) => `<span class="chip">${esc(n)} · <b>${c}</b> zero${c === 1 ? '' : 's'}</span>`).join('') || '<span class="muted">No zeros recorded yet.</span>';
+    $('zeroBody').innerHTML = zeroList.slice().reverse().map(z => zeroRow(z, true)).join('') ||
+      '<tr><td colspan="5" class="empty">No zeros recorded yet.</td></tr>';
+  }
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-mig]');
+  if (!b || !officer) return;
+  const p = P[+b.dataset.i], op = b.dataset.mig, st = migState(p);
+  let note = '';
+  if (op === 'zero') {
+    note = prompt(`Record a zero on ${p.n}?\n\nOptional note (what was done, who joined):`, '');
+    if (note === null) return;
+  } else if (!confirm({
+    must: `Mark ${p.n} as must migrate?\n\nThey go on the Must migrate list (and the next King's mail) until an R4 revokes it.`,
+    revoke: `Lift must migrate for ${p.n}?\n\n` + (autoMust(p) ? 'They leave the list until their next failed fort week.' : 'They leave the list.'),
+    out: `Mark ${p.n} as migrated out of Kingdom 3514?\n\nThey move to the Migrated out list and are no longer zero-filled in the weekly rankings.`,
+    back: `Undo "migrated out" for ${p.n}?`,
+    zero_undo: `Remove this zero record for ${p.n}?`,
+  }[op])) return;
+  saving(b);
+  try {
+    const r = await fetch(DATA.finesUrl, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({key: r4key, action: 'migrate', op, account_id: p.id, player: p.n, note, ref: b.dataset.ref})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not saved');
+    const now = new Date().toISOString(), m = {...(mig[p.id] || {})};
+    if (op === 'must' || op === 'revoke') Object.assign(m, {m: op, mb: officer, mt: now});
+    if (op === 'out') m.out = {by: officer, time: now};
+    if (op === 'back') delete m.out;
+    if (op === 'zero') { m.z = (m.z || 0) + 1; m.zt = now; zeroList = [...zeroList, {ref: j.ref, account_id: p.id, player: p.n, by: officer, time: now, note: note || undefined}]; }
+    if (op === 'zero_undo') { zeroList = zeroList.filter(z => z.ref !== b.dataset.ref); m.z = Math.max(0, (m.z || 1) - 1);
+      const left = zeroList.filter(z => z.account_id === p.id).pop(); m.zt = left ? left.time : undefined; }
+    mig = {...mig, [p.id]: m};
+    saved();
+  } catch (err) { notSaved(b, err); }
+});
+$('migSearch').addEventListener('input', renderMigrate);
+$('migShow').addEventListener('input', renderMigrate);
+
+async function sendPayment(f, action, amount) {
+  const r = await fetch(DATA.finesUrl, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify({key: r4key, fine_id: f.id, player: f.p != null ? P[f.p].n : f.n, week: f.wk, amount, action})});
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'not saved');
+}
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-type]');
+  if (!b || !officer) return;
+  const p = P[+b.dataset.i], type = b.dataset.type;
+  const rules = type === 'farm' ? ' (no offenses or fines, not in the rewards).' : '.';
+  const msg = approver
+    ? `${type === p.t ? 'Confirm' : 'Set'} ${p.n} as a ${type} account?\n\nEvery week is recalculated with the ${type} rules` + rules
+    : type === p.t
+    ? `Confirm ${p.n} as a ${type} account?\n\nAn approver still has to approve it.`
+    : `Propose ${p.n} as a ${type} account?\n\nAn approver has to approve it; after that every week is recalculated with the ${type} rules` + rules;
+  if (!confirm(msg)) return;
+  saving(b);
+  try {
+    const r = await fetch(DATA.finesUrl, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({key: r4key, account_id: p.id, player: p.n, action: type})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not saved');
+    if (j.approved) alert(`Saved. The dashboard updates ${String(j.recalc).startsWith('started') ? 'in a few minutes' : 'within the hour'}.`);
+    typeSaved([p.id], type, j.approved);
+    saved();
+  } catch (err) { notSaved(b, err); }
+});
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-decide]');
+  if (!b || !officer) return;
+  const p = P[+b.dataset.i], c = (changes[p.id] || {}).pending, ok = b.dataset.decide === 'approve';
+  if (!approver && !(c && c.pub)) return;
+  if (!c || !confirm(`${ok ? 'Approve' : 'Reject'}: ${p.n} → ${c.type === p.t ? 'confirm ' + c.type : c.type}?` +
+      (ok ? '\n\nEvery week is recalculated with the new type.' : ''))) return;
+  saving(b);
+  try {
+    const r = await fetch(DATA.finesUrl, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({key: r4key, account_id: p.id, action: b.dataset.decide})});
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'not saved');
+    if (ok) alert(`Approved. The dashboard updates ${String(j.recalc).startsWith('started') ? 'in a few minutes' : 'within the hour'}.`);
+    const {pending, ...rest} = changes[p.id];
+    changes[p.id] = ok ? {type: c.type, by: c.by, decided: new Date().toISOString(), approvedBy: officer} : rest;
+    saved();
+  } catch (err) { notSaved(b, err); }
+});
+
+$('finesBody').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-pay], button[data-undo]');
+  if (!b || !officer) return;
+  const f = F.find(f => f.id === (b.dataset.pay || b.dataset.undo)), name = f.p != null ? P[f.p].n : f.n;
+  if (b.dataset.pay) return openPay(f);
+  if (!confirm(`Undo the payment recorded for ${name} (${fineLabel(f)})?`)) return;
+  saving(b);
+  try {
+    await sendPayment(f, 'undo', 0);
+    ledger = {...ledger};
+    delete ledger[f.id];
+    saved();
+  } catch (err) { notSaved(b, err); }
+});
+
+// R4 "Mark paid": what the player sent, one field per resource (any mix), recorded as its gold value
+function openPay(f) {
+  const name = f.p != null ? P[f.p].n : f.n, rss = rssOf(f), due = f.a - (f.h || 0);
+  $('payView').innerHTML = `<h2>Record payment</h2>
+    <div class="sub">${esc(name)} · ${esc(fineLabel(f))} · fine <b>${gold(f.a)}</b> gold value${f.h ? ` · ${gold(f.h)} already paid by hand` : ''}</div>
+    <div class="sub" style="margin-top:12px">What arrived in the bank KD <b>${esc(DATA.bank || '')}</b>? Fill in each resource (one or a mix).</div>
+    <div class="calc" id="payHave">${Object.keys(rss).map(r => `<label>${cap(r)}<input type="text" inputmode="decimal" data-pr="${r}" placeholder="0" autocomplete="off">` +
+      `<button class="hint" type="button" data-pfill="${r}" hidden></button></label>`).join('')}</div>
+    <div class="calc-out" id="paySum"></div>
+    <div class="controls"><button class="act" id="paySave" type="button">Record payment</button><span class="sub" id="payMsg"></span></div>`;
+  const inputs = () => [...document.querySelectorAll('#payHave input')];
+  const check = () => {
+    const v = inputs().reduce((a, i) => a + amount(i.value) / rss[i.dataset.pr], 0), left = due - (v || 0);
+    $('paySum').innerHTML = isNaN(v) ? '<span class="below">Use numbers like 300M or 1,575,569.</span>'
+      : v ? `Worth <b>${payFmt(v)}</b> gold value · ${left <= 0 ? '<span class="paid">covers the fine</span>' : `<span class="below">${payFmt(left)} short</span> (recorded as a partial payment)`}` : '';
+    document.querySelectorAll('#payHave [data-pfill]').forEach(b => {  // the rest in each empty resource, tap to fill
+      const i = b.previousElementSibling;
+      b.hidden = !!i.value.trim() || isNaN(v) || left <= 0;
+      if (!b.hidden) { b.dataset.v = payFull(left * rss[b.dataset.pfill]); b.textContent = `↑ tap to fill ${v ? 'the rest' : 'the fine'}: ${b.dataset.v}`; }
+      i.placeholder = b.hidden ? '0' : `${v ? 'rest' : 'fine'}: ${payFmt(left * rss[b.dataset.pfill])}`;
+    });
+    return v;
+  };
+  $('payHave').addEventListener('input', e => { groupDigits(e.target); check(); });
+  $('payHave').addEventListener('click', e => {
+    const b = e.target.closest('button[data-pfill]');
+    if (!b) return;
+    e.preventDefault();
+    b.previousElementSibling.value = b.dataset.v;
+    check();
+  });
+  $('paySave').addEventListener('click', async () => {
+    const v = check(), b = $('paySave');
+    if (isNaN(v) || !(v > 0)) { $('payMsg').innerHTML = '<span class="below">Fill in what arrived.</span>'; return; }
+    const amount = Math.round(v);
+    saving(b);
+    try {
+      await sendPayment(f, 'paid', amount);
+      ledger = {...ledger, [f.id]: {amount, by: officer, time: new Date().toISOString()}};
+      $('payDlg').close();
+      saved();
+    } catch (err) { $('payMsg').innerHTML = `<span class="below">Not saved: ${esc(err.message)}. Try again.</span>`; b.disabled = false; b.textContent = b.dataset.label; }
+  });
+  check();
+  $('payDlg').showModal();
+  inputs()[0].focus();
+}
+$('finesEv').innerHTML = '<option value="all">All events</option><option value="fort">Weekly Fort (all weeks)</option>' +
+  [...new Map(shownFines().slice().sort((a, b) => b.wk.localeCompare(a.wk)).map(f => [fineEv(f), fineEvLabel(f)]))]
+    .map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('');
+// Offense filter: fort fines only (an MGE fine has no offense number)
+$('finesOff').innerHTML = '<option value="all">All offenses</option>' +
+  [...new Set(shownFines().filter(f => !f.e && f.o).map(f => f.o))].sort((a, b) => a - b)
+    .map(o => `<option value="${o}">Fort: ${ordinal(o)} offense</option>`).join('');
+['finesSearch', 'finesSel', 'finesEv', 'finesOff'].forEach(id => $(id).addEventListener('input', renderFines));
+
+// ---------- tabs (#t=players|activity|fines|review, plus p=<name> on the players tab) ----------
+const TABS = ['players', 'activity', 'fines', 'migrate', 'mge', 'gh', 'canyon', 'aoo', 'power', 'roster', 'kvk', 'review'];
+let tab = 'activity';
+function setHash() {
+  const q = new URLSearchParams({t: tab});
+  if (current) q.set('p', current.n);
+  history.replaceState(null, '', location.pathname + location.search + '#' + q);  // keeps ?key= in R4 mode
+}
+function renderSubtitle() {
+  $('subtitle').textContent =
+    tab === 'activity' ? `${weekLabel(week)} ${week.slice(0, 4)}${partial(week) ? ` · partial data (${seen(week)} of ${maxSeen} players captured)` : ''} · minimum ${DATA.minF} forts and ${fmt(DATA.minT)} tech per week`
+    : tab === 'players' ? `${fmt(P.filter(p => !p.x).length)} governors · alliances from the scan of ${dayLabel(DATA.scanDay)}` + (DATA.namesDay ? ` · names and power from the member export of ${dayLabel(DATA.namesDay)}` : '')
+    : tab === 'fines' ? 'Fines and whether they have been paid'
+    : tab === 'migrate' ? 'Who must migrate out of Kingdom 3514, who has left, and how often each account was zeroed'
+    : tab === 'mge' ? 'Mightiest Governor: point limits, takeovers and fines'
+    : tab === 'gh' ? '20 GH (Gold Head): point limits and fines'
+    : tab === 'canyon' ? 'Canyon Clash: who used all their attacks'
+    : tab === 'aoo' ? 'Ark of Osiris: who played, who did not, and low scores'
+    : tab === 'power' ? `CH${(DATA.power || {}).ch || 25} total power across the in-game member exports`
+    : tab === 'roster' ? 'KvK battle roster: who is on it, their alliance and total power'
+    : tab === 'kvk' ? 'Past KvK results, including governors not in the kingdom now'
+    : 'Farm and main account changes waiting for approval';
+}
+function showTab(t) {
+  tab = TABS.includes(t) && (t !== 'review' || officer) ? t : 'activity';
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.querySelectorAll('section[data-panel]').forEach(sec => { sec.hidden = sec.dataset.panel !== tab; });
+  renderSubtitle();
+  if (tab === 'activity') renderOverview();  // charts need a visible width
+  if (tab === 'power') renderPower();
+  setHash();
+}
+function route() {
+  const q = new URLSearchParams(location.hash.slice(1)), name = q.get('p');
+  const p = name && (P.find(p => p.n === name) || P.find(p => (p.pn || []).includes(name)));
+  showTab(q.get('t') || (p ? 'players' : tab));
+  const ev = q.get('e');  // MGE tab: e=<start date> or e=history (past seasons)
+  if (ev && [...$('mgeSel').options].some(o => o.value === ev)) { $('mgeSel').value = ev; renderMge(); }
+  if (ev && [...$('ghSel').options].some(o => o.value === ev)) { $('ghSel').value = ev; renderGh(); }  // 20 GH: e=<start>
+  if (p) selectPlayer(p); else if ($('playerDlg').open) $('playerDlg').close();
+}
+
+// Player details open in a pop-up over whatever list was clicked.
+function selectPlayer(p) {
+  const dlg = $('playerDlg');
+  current = p;
+  if (!dlg.open) { dlg.showModal(); dlg.appendChild(tip); }  // the tooltip must live in the top layer too
+  dlg.scrollTop = 0;
+  renderPlayer();
+  setHash();
+}
+function closePlayer() { $('playerDlg').close(); }
+
+function renderAll() {
+  renderSubtitle(); renderTiles(); renderTable(); renderRoster(); renderReview(); renderMigrate(); renderKvk(); renderMge(); renderMgh(); renderGh(); renderCanyon(); renderAoo(); renderPower(); renderRosterKvk();
+  if (tab === 'activity') renderOverview();
+  renderPlayer();
+}
+
+// ---------- wiring ----------
+$('weekSel').innerHTML = weeks.slice().reverse().map(w => `<option value="${w}">${weekLabel(w)} ${w.slice(0, 4)}${partial(w) ? ' (partial data)' : ''}</option>`).join('');
+$('weekSel').addEventListener('change', e => { week = e.target.value; renderAll(); });
+$('dlgClose').addEventListener('click', closePlayer);
+$('playerDlg').addEventListener('click', e => { if (e.target === $('playerDlg')) closePlayer(); });  // click on the backdrop
+$('playerDlg').addEventListener('close', () => { current = null; hideTip(); document.body.appendChild(tip); setHash(); });
+['tableSearch', 'typeSel', 'offSel'].forEach(id => $(id).addEventListener('input', renderTable));
+document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.k;
+  sortDir = sortK === k ? -sortDir : (k === 'n' || k === 't' ? 1 : -1); sortK = k; renderTable();
+}));
+// Player pop-up from the master list, weekly activity, KvK history and the MGE history
+['tbody', 'rosterBody', 'kvkBody', 'mghBody', 'mghTopBody', 'migBody', 'migOutBody'].forEach(id => $(id).addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-i]');
+  if (tr && !e.target.closest('button, input, td.sel')) selectPlayer(P[+tr.dataset.i]);
+}));
+document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+addEventListener('hashchange', route);
+const allies = {};
+P.forEach(p => { if (p.a) allies[p.a] = (allies[p.a] || 0) + 1; });
+// Alliance filter: tick any number of alliances ("" = no alliance); every box (or none) ticked = all alliances
+const allyPick = new Set([DATA.mainAlly]);
+const noAlly = P.filter(p => !p.a && !p.x).length;
+const allyOpts = Object.entries(allies).sort((a, b) => b[1] - a[1]).concat([['', noAlly]]);
+const allyAllOn = () => !allyPick.size || allyPick.size === allyOpts.length;
+$('allyList').innerHTML = allyOpts.map(([a, n]) =>
+  `<label><input type="checkbox" value="${esc(a)}"${allyPick.has(a) ? ' checked' : ''}>${a ? esc(a) : '<i>No alliance</i>'}<span class="n">${n}</span></label>`).join('');
+function allyChanged() {
+  document.querySelectorAll('#allyList input').forEach(i => { i.checked = allyPick.has(i.value); });
+  const one = [...allyPick][0];
+  $('allySum').textContent = allyAllOn() ? 'All alliances' : allyPick.size > 1 ? `${allyPick.size} alliances` : one || 'No alliance';
+  renderRoster();
+}
+// Find box: hides alliances that don't match (ticks stay as they are)
+$('allyFind').addEventListener('input', () => {
+  const q = $('allyFind').value.trim().toLowerCase();
+  let shown = 0;
+  document.querySelectorAll('#allyList label').forEach(l => { l.hidden = !!q && !l.textContent.toLowerCase().includes(q); shown += !l.hidden; });
+  $('allyNone').hidden = !!shown;
+});
+$('allyMs').addEventListener('toggle', () => { if ($('allyMs').open) $('allyFind').focus(); });
+$('allyList').addEventListener('change', e => { e.target.checked ? allyPick.add(e.target.value) : allyPick.delete(e.target.value); allyChanged(); });
+$('allyAll').addEventListener('click', () => { allyOpts.forEach(([a]) => allyPick.add(a)); allyChanged(); $('allyMs').open = false; });
+$('allyMain').addEventListener('click', () => { allyPick.clear(); allyPick.add(DATA.mainAlly); allyChanged(); $('allyMs').open = false; });
+document.addEventListener('click', e => { if (!e.target.closest('#allyMs')) $('allyMs').open = false; });  // close when clicking elsewhere
+allyChanged();
+['rosterSearch', 'rosterType', 'rosterCh'].forEach(id => $(id).addEventListener('input', renderRoster));
+document.querySelectorAll('th[data-rk]').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.rk;
+  rSortDir = rSortK === k ? -rSortDir : (k === 'pw' || k === 'kp' || k === 'ch' ? -1 : 1); rSortK = k; renderRoster();
+}));
+const root = document.documentElement;
+try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
+$('themeBtn').addEventListener('click', () => {
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+});
+$('footer').textContent = `Updated ${DATA.updated}. Fort counts are per player; a fort destroyed in a rally counts for every participant. Farms and the R5 are excluded from rewards; farms have no penalty.`;
+let rt;
+addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (tab === 'activity') renderOverview(); renderPlayer(); }, 150); });
+// With ?key= the page stays behind the "Checking" screen until the key is verified, then renders in R4 mode.
+readKey();
+if (DATA.ledger) { ledger = DATA.ledger.paid || {}; changes = DATA.ledger.accounts || {}; mig = DATA.ledger.migrate || {}; }
+(async () => {
+  const known = await identify();
+  if (r4key && !known) await loadLedger();  // key not in the published list (e.g. just made): ask the sheet
+  document.body.classList.remove('gating');
+  renderAll(); renderFines(); renderOfficer(); route();
+  if (!r4key || known) loadLedger();  // refresh in the background
+})();
+</script>
+</body>
+</html>
