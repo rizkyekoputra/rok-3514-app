@@ -1283,7 +1283,7 @@ function openClaim(f) {
       claims = {...claims, [f.id]: {s: 'pending', t: new Date().toISOString()}};
       $('claimView').innerHTML = `<h2>Proof sent</h2><div class="sub">Thanks, ${esc(name)}. An R4 will check the bank KD and confirm your payment.
         Until then this fine shows "Proof sent · waiting for an R4".</div>`;
-      renderFines();
+      renderFines(); renderAm();
     } catch (e) { $('clMsg').innerHTML = `<span class="below">Not sent: ${esc(e.message)}. Try again.</span>`; b.disabled = false; b.textContent = b.dataset.label; }
   });
   $('claimDlg').showModal();
@@ -1348,10 +1348,10 @@ $('claimsBody').addEventListener('click', async e => {
     saved();
   } catch (err) { notSaved(b, err); }
 });
-$('finesBody').addEventListener('click', e => {
+['finesBody', 'amBody'].forEach(id => $(id).addEventListener('click', e => {
   const b = e.target.closest('button[data-claim]');
   if (b) openClaim(F.find(f => f.id === b.dataset.claim));
-});
+}));
 // Players suggest farm/main for an account; an R4 approves or rejects it in Review
 document.addEventListener('click', e => {
   const b = e.target.closest('button[data-suggest]');
@@ -1501,6 +1501,15 @@ $('ghSel').innerHTML = (DATA.ghs || []).slice().reverse().map(g => `<option valu
 // ---------- Alliance Mobilization tab ----------
 // a row: [rank, player index or null, name then, type (main/farm/R5), points, minimum, missing, fine, missions]
 const AM = Object.fromEntries((DATA.ams || []).map(a => [a.s, a]));
+// Status of a Mobilization fine: paid / unpaid, then for players "I've paid: send proof" (claim) and the calculator,
+// for R4s "Mark paid" (or Undo once recorded); the same buttons and handlers as the Fines tab
+function amStatus(f) {
+  const l = ledger && ledger[f.id], full = paidOf(f) >= f.a;
+  const act = !officer ? calcBtn(f) : f.pv ? ' <span class="muted">Provisional</span>'
+    : l ? ` <button class="act ghost" data-undo="${f.id}" type="button">Undo</button>` : ` <button class="act" data-pay="${f.id}" type="button">Mark paid</button>`;
+  return fineStatus(f) + (l ? ` <span class="muted">${esc(l.by)}, ${l.time.slice(0, 10)}</span>` : '') +
+    (full ? '' : claimStatus(f)) + (full && !officer ? '' : act);
+}
 const amFine = (s, i, name) => F.find(f => f.t === 'am' && f.wk === s && (i != null ? f.p === i : f.n === name));
 function renderAm() {
   const a = AM[$('amSel').value];
@@ -1523,7 +1532,7 @@ function renderAm() {
       <td>${r[3] === 'R5' ? 'R5 (exempt)' : r[3] === 'farm' ? 'Farm' : 'Main'}</td><td class="num">${esc(r[8])}</td>
       <td class="num">${r[3] === 'R5' ? '–' : fmt(r[5])}</td><td class="num">${fmt(r[4])}</td>
       <td class="num">${r[6] ? `<span class="below">${fmt(r[6])}</span>` : '<span class="muted">–</span>'}</td>
-      <td class="num">${r[7] ? gold(r[7]) : '–'}</td><td>${f ? fineStatus(f) + calcBtn(f) : '<span class="paid">OK</span>'}</td></tr>`;
+      <td class="num">${r[7] ? gold(r[7]) : '–'}</td><td>${f ? amStatus(f) : '<span class="paid">OK</span>'}</td></tr>`;
   }).join('') || '<tr><td colspan="9" class="empty">No players match.</td></tr>';
   $('amCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} of ${a.r.length}`;
   $('amSub').textContent = `${a.l}${a.f ? '' : ' · PROVISIONAL ranking: fines are not final and cannot be marked paid yet'} · ` +
@@ -1801,7 +1810,7 @@ $('rosterAll').addEventListener('change', e => {
 // the change at once and refreshes everything from the sheet in the background.
 function saving(b) { b.disabled = true; b.dataset.label = b.textContent; b.textContent = 'Saving…'; }
 function notSaved(b, err) { alert('Not saved: ' + err.message + '. Try again.'); b.disabled = false; b.textContent = b.dataset.label; }
-function saved() { renderMge(); renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMigrate(); loadLedger(); }
+function saved() { renderMge(); renderGh(); renderAm(); renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMigrate(); loadLedger(); }
 function typeSaved(ids, type, approved) {
   const now = new Date().toISOString();
   ids.forEach(id => { changes[id] = approved ? {type, by: officer, decided: now} : {...changes[id], pending: {type, by: officer, time: now}}; });
@@ -1924,7 +1933,7 @@ async function loadLedger() {
       if (attempt === 2) $('finesSub').textContent = `Could not reach the ledger just now; showing data from the last update (${DATA.updated}).`;
     }
   }
-  renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMge(); renderMigrate();
+  renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMge(); renderGh(); renderAm(); renderMigrate();
 }
 
 function renderOfficer() {
@@ -2181,7 +2190,7 @@ document.addEventListener('click', async e => {
   } catch (err) { notSaved(b, err); }
 });
 
-$('finesBody').addEventListener('click', async e => {
+['finesBody', 'amBody'].forEach(id => $(id).addEventListener('click', async e => {
   const b = e.target.closest('button[data-pay], button[data-undo]');
   if (!b || !officer) return;
   const f = F.find(f => f.id === (b.dataset.pay || b.dataset.undo)), name = f.p != null ? P[f.p].n : f.n;
@@ -2194,7 +2203,7 @@ $('finesBody').addEventListener('click', async e => {
     delete ledger[f.id];
     saved();
   } catch (err) { notSaved(b, err); }
-});
+}));
 
 // R4 "Mark paid": what the player sent, one field per resource (any mix), recorded as its gold value
 function openPay(f) {
