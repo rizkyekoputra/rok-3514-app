@@ -208,6 +208,7 @@ footer { margin-top: 24px; color: var(--text-muted); font-size: 12px; }
     <button data-tab="migrate" type="button">Must migrate <span class="badge" id="migCount"></span></button>
     <button data-tab="mge" id="mgeTabBtn" type="button">MGE</button>
     <button data-tab="gh" type="button">20 GH</button>
+    <button data-tab="am" type="button">Mobilization</button>
     <button data-tab="canyon" type="button">Canyon Clash</button>
     <button data-tab="aoo" type="button">Ark of Osiris</button>
     <button data-tab="power" type="button">CH25 power</button>
@@ -483,6 +484,36 @@ footer { margin-top: 24px; color: var(--text-muted); font-size: 12px; }
         <tbody id="ghBody"></tbody>
       </table></div>
       <div class="sub" id="ghCount"></div>
+    </div>
+  </section>
+
+  <section data-panel="am" hidden>
+    <div class="card" data-calc-card="am"></div>
+    <div class="controls">
+      <label class="sub" for="amSel">Event</label>
+      <select id="amSel"></select>
+    </div>
+    <div class="tiles" id="amTiles"></div>
+    <div class="card">
+      <h2>Personal contribution</h2>
+      <div class="sub" id="amSub"></div>
+      <div class="controls">
+        <input type="search" id="amSearch" placeholder="Filter by name…" autocomplete="off">
+        <select id="amShow">
+          <option value="all">Everyone</option>
+          <option value="below">Below the minimum</option>
+          <option value="main">Main accounts</option>
+          <option value="farm">Farms</option>
+        </select>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th class="num">Rank</th><th>Player</th><th>Type</th><th class="num">Missions</th><th class="num">Minimum</th><th class="num">Points</th>
+          <th class="num">Missing</th><th class="num">Fine (gold)</th><th>Status</th>
+        </tr></thead>
+        <tbody id="amBody"></tbody>
+      </table></div>
+      <div class="sub" id="amCount"></div>
     </div>
   </section>
 
@@ -935,6 +966,11 @@ function renderPlayer() {
       <tbody>${p.gh.slice().reverse().map(([s, rank, pts, over]) => { const f = ghFine(s, P.indexOf(p));
         return `<tr style="cursor:default"><td>${esc(GH[s] ? GH[s].l : s)}</td><td class="num">${rank}</td><td class="num">${fmt(pts)}</td>
         <td class="num">${over ? fmt(over) : '–'}</td><td>${f ? fineStatus(f) : '<span class="muted">–</span>'}</td></tr>`; }).join('')}</tbody></table></div>` : ''}
+    ${p.am ? `<div class="p-sec">Alliance Mobilization</div><div class="table-wrap"><table class="kv">
+      <thead><tr><th>Event</th><th class="num">Rank</th><th class="num">Points</th><th class="num">Missing</th><th>Fine</th></tr></thead>
+      <tbody>${p.am.slice().reverse().map(([s, rank, pts, need, miss]) => { const f = amFine(s, P.indexOf(p));
+        return `<tr style="cursor:default"><td>${esc(AM[s] ? AM[s].l : s)}</td><td class="num">${rank}</td><td class="num">${fmt(pts)}</td>
+        <td class="num">${miss ? fmt(miss) : '–'}</td><td>${f ? fineStatus(f) : '<span class="muted">–</span>'}</td></tr>`; }).join('')}</tbody></table></div>` : ''}
     ${p.mh ? `<div class="p-sec">MGE top 10 (in-game history)</div><div class="table-wrap"><table class="kv">
       <thead><tr><th>Season</th><th class="num">Rank</th><th class="num">Points</th></tr></thead>
       <tbody>${p.mh.map(([n, d, rank, pts]) => `<tr style="cursor:default"><td>Season ${n} <span class="muted">${dayLabel(d)}</span></td>
@@ -1462,6 +1498,46 @@ $('ghSel').innerHTML = (DATA.ghs || []).slice().reverse().map(g => `<option valu
   if (f && calcs[f.t]) calcs[f.t].fill(f.a - paidOf(f));
 }));
 
+// ---------- Alliance Mobilization tab ----------
+// a row: [rank, player index or null, name then, type (main/farm/R5), points, minimum, missing, fine, missions]
+const AM = Object.fromEntries((DATA.ams || []).map(a => [a.s, a]));
+const amFine = (s, i, name) => F.find(f => f.t === 'am' && f.wk === s && (i != null ? f.p === i : f.n === name));
+function renderAm() {
+  const a = AM[$('amSel').value];
+  if (!a) { $('amBody').innerHTML = '<tr><td colspan="9" class="empty">No Alliance Mobilization data yet.</td></tr>'; return; }
+  const q = $('amSearch').value.trim().toLowerCase(), show = $('amShow').value;
+  const name = r => r[1] != null ? P[r[1]].n : r[2];
+  const rows = a.r.filter(r => (!q || name(r).toLowerCase().includes(q) || r[2].toLowerCase().includes(q)) &&
+    (show === 'all' || (show === 'below' ? r[6] > 0 : r[3] === show)));
+  const fines = a.r.filter(r => r[7]).map(r => amFine(a.s, r[1], r[2])).filter(Boolean);
+  const owed = fines.reduce((x, f) => x + Math.max(0, f.a - paidOf(f)), 0);
+  $('amTiles').innerHTML = [
+    [`${a.r.length - fines.length}/${a.r.length}`, 'Reached their minimum'],
+    [fines.length, 'Below the minimum'],
+    [gold(fines.reduce((x, f) => x + f.a, 0)), 'Fines (gold value)'],
+    [gold(owed), 'Still unpaid (gold value)'],
+  ].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  $('amBody').innerHTML = rows.map(r => {
+    const f = r[7] ? amFine(a.s, r[1], r[2]) : null;
+    return `<tr${r[1] != null ? ` data-i="${r[1]}"` : ' style="cursor:default"'}><td class="num">${r[0]}</td><td>${esc(name(r))}</td>
+      <td>${r[3] === 'R5' ? 'R5 (exempt)' : r[3] === 'farm' ? 'Farm' : 'Main'}</td><td class="num">${esc(r[8])}</td>
+      <td class="num">${r[3] === 'R5' ? '–' : fmt(r[5])}</td><td class="num">${fmt(r[4])}</td>
+      <td class="num">${r[6] ? `<span class="below">${fmt(r[6])}</span>` : '<span class="muted">–</span>'}</td>
+      <td class="num">${r[7] ? gold(r[7]) : '–'}</td><td>${f ? fineStatus(f) + calcBtn(f) : '<span class="paid">OK</span>'}</td></tr>`;
+  }).join('') || '<tr><td colspan="9" class="empty">No players match.</td></tr>';
+  $('amCount').textContent = `${rows.length} player${rows.length === 1 ? '' : 's'} of ${a.r.length}`;
+  $('amSub').textContent = `${a.l}${a.f ? '' : ' · PROVISIONAL ranking: fines are not final and cannot be marked paid yet'} · ` +
+    `Minimum ${fmt(a.mm)} points per main account, ${fmt(a.mf)} per farm (R5 exempt). Fine per missing point: ` +
+    `${Object.entries(DATA.amFine).map(([r, v]) => fmt(v) + ' ' + r).join(' / ')} (one or a mix), paid to the bank KD` +
+    (a.pb ? ` · Final deadline for payment: ${dayLabel(a.pb)}.` : '.');
+}
+$('amSel').innerHTML = (DATA.ams || []).slice().reverse().map(a => `<option value="${a.s}">${esc(a.l)}${a.f ? '' : ' (provisional)'}</option>`).join('');
+['amSel', 'amSearch', 'amShow'].forEach(id => $(id).addEventListener('input', renderAm));
+$('amBody').addEventListener('click', e => {
+  const b = e.target.closest('button[data-calc]'), f = b && F.find(f => f.id === b.dataset.calc);
+  if (f && calcs[f.t]) calcs[f.t].fill(f.a - paidOf(f));
+});
+
 // ---------- Canyon Clash tab ----------
 // a Canyon Clash row: [rank, player index or null, name then, defenses, attacks used]; n = attacks each governor gets
 const CANYON = Object.fromEntries((DATA.canyons || []).map(c => [c.s, c]));
@@ -1809,7 +1885,7 @@ const fineWhen = f => esc(fineLabel(f));
 const fineEv = f => (f.t || 'fort') + ':' + f.wk;
 const fineEvLabel = f => f.e || `Weekly Fort ${weekLabel(f.wk)} ${f.wk.slice(0, 4)}`;
 const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
-const fineWhy = f => f.e ? `${fmt(f.m)} pts over` : `${f.m} forts short`;
+const fineWhy = f => f.t === 'am' ? `${fmt(f.m)} pts short` : f.e ? `${fmt(f.m)} pts over` : `${f.m} forts short`;
 const unpaidOf = p => ledger ? shownFines().filter(f => P[f.p] === p).reduce((a, f) => a + Math.max(0, f.a - paidOf(f)), 0) : p.u;
 
 // R4 mode only while ?key= is in the address; nothing is stored, so the plain link is always read-only.
@@ -2177,7 +2253,7 @@ $('finesOff').innerHTML = '<option value="all">All offenses</option>' +
 ['finesSearch', 'finesSel', 'finesEv', 'finesOff'].forEach(id => $(id).addEventListener('input', renderFines));
 
 // ---------- tabs (#t=players|activity|fines|review, plus p=<name> on the players tab) ----------
-const TABS = ['players', 'activity', 'fines', 'migrate', 'mge', 'gh', 'canyon', 'aoo', 'power', 'roster', 'kvk', 'review'];
+const TABS = ['players', 'activity', 'fines', 'migrate', 'mge', 'gh', 'am', 'canyon', 'aoo', 'power', 'roster', 'kvk', 'review'];
 let tab = 'activity';
 function setHash() {
   const q = new URLSearchParams({t: tab});
@@ -2192,6 +2268,7 @@ function renderSubtitle() {
     : tab === 'migrate' ? 'Who must migrate out of Kingdom 3514, who has left, and how often each account was zeroed'
     : tab === 'mge' ? 'Mightiest Governor: point limits, takeovers and fines'
     : tab === 'gh' ? '20 GH (Gold Head): point limits and fines'
+    : tab === 'am' ? 'Alliance Mobilization: minimum points and fines'
     : tab === 'canyon' ? 'Canyon Clash: who used all their attacks'
     : tab === 'aoo' ? 'Ark of Osiris: who played, who did not, and low scores'
     : tab === 'power' ? `CH${(DATA.power || {}).ch || 25} total power across the in-game member exports`
@@ -2215,6 +2292,7 @@ function route() {
   const ev = q.get('e');  // MGE tab: e=<start date> or e=history (past seasons)
   if (ev && [...$('mgeSel').options].some(o => o.value === ev)) { $('mgeSel').value = ev; renderMge(); }
   if (ev && [...$('ghSel').options].some(o => o.value === ev)) { $('ghSel').value = ev; renderGh(); }  // 20 GH: e=<start>
+  if (ev && [...$('amSel').options].some(o => o.value === ev)) { $('amSel').value = ev; renderAm(); }  // Mobilization: e=<start>
   if (p) selectPlayer(p); else if ($('playerDlg').open) $('playerDlg').close();
 }
 
@@ -2230,7 +2308,7 @@ function selectPlayer(p) {
 function closePlayer() { $('playerDlg').close(); }
 
 function renderAll() {
-  renderSubtitle(); renderTiles(); renderTable(); renderRoster(); renderReview(); renderMigrate(); renderKvk(); renderMge(); renderMgh(); renderGh(); renderCanyon(); renderAoo(); renderPower(); renderRosterKvk();
+  renderSubtitle(); renderTiles(); renderTable(); renderRoster(); renderReview(); renderMigrate(); renderKvk(); renderMge(); renderMgh(); renderGh(); renderAm(); renderCanyon(); renderAoo(); renderPower(); renderRosterKvk();
   if (tab === 'activity') renderOverview();
   renderPlayer();
 }
@@ -2247,7 +2325,7 @@ document.querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click
   sortDir = sortK === k ? -sortDir : (k === 'n' || k === 't' ? 1 : -1); sortK = k; renderTable();
 }));
 // Player pop-up from the master list, weekly activity, KvK history and the MGE history
-['tbody', 'rosterBody', 'kvkBody', 'mghBody', 'mghTopBody', 'migBody', 'migOutBody'].forEach(id => $(id).addEventListener('click', e => {
+['tbody', 'rosterBody', 'kvkBody', 'mghBody', 'mghTopBody', 'migBody', 'migOutBody', 'amBody'].forEach(id => $(id).addEventListener('click', e => {
   const tr = e.target.closest('tr[data-i]');
   if (tr && !e.target.closest('button, input, td.sel')) selectPlayer(P[+tr.dataset.i]);
 }));
