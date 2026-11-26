@@ -10,8 +10,9 @@ Credentials are read from the environment / .env only, never from arguments or c
   OLD_SUPABASE_URL, OLD_SUPABASE_SERVICE_KEY
   SUPABASE_URL, SUPABASE_SERVICE_KEY       the new project (same names as the other scripts), for proof files
 
-  python3 scripts/admin/migrate_project.py           # counts + plan, no changes
-  python3 scripts/admin/migrate_project.py --write   # copy tables, then proof files
+  python3 scripts/admin/migrate_project.py            # counts + plan, no changes
+  python3 scripts/admin/migrate_project.py --write    # copy tables, then proof files
+  python3 scripts/admin/migrate_project.py --files-only  # only proof files (tables already copied)
 
 The old project can be egress-restricted (HTTP 402); in that case wait for the billing cycle or upgrade it first.
 """
@@ -126,11 +127,17 @@ def copy_files(old_db, old_url, old_key, new_url, new_key, write):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--write', action='store_true')
+    ap.add_argument('--files-only', action='store_true', help='copy proof files only; leaves the ledger tables alone')
     args = ap.parse_args()
     load_env()
     old_db, new_db = os.environ['OLD_DATABASE_URL'], os.environ['NEW_DATABASE_URL']
     old_url, old_key = os.environ['OLD_SUPABASE_URL'].rstrip('/'), os.environ['OLD_SUPABASE_SERVICE_KEY']
     new_url, new_key = os.environ['SUPABASE_URL'].rstrip('/'), os.environ['SUPABASE_SERVICE_KEY']
+
+    if args.files_only:
+        copy_files(old_db, old_url, old_key, new_url, new_key, True)
+        print('proof files copied')
+        return
 
     before, after = counts(old_db), counts(new_db)
     print('table'.ljust(18), 'old'.rjust(7), 'new'.rjust(7))
