@@ -50,6 +50,11 @@ def main():
     with open(os.path.join(args.out, 'index.html'), 'w', encoding='utf-8') as f:
         f.write(page)
     shutil.copyfile(args.data, os.path.join(args.out, 'data.json'))
+    snapshot = os.path.join(ROOT, 'data', 'ledger_public.json')
+    if os.path.exists(snapshot):
+        shutil.copyfile(snapshot, os.path.join(args.out, 'ledger.json'))
+    else:
+        print('note: no data/ledger_public.json; the page will fall back to a live ledger_get')
     print(f'site/: index.html {len(page) // 1024} KB, data.json {os.path.getsize(os.path.join(args.out, "data.json")) // 1024} KB '
           f'({len(data.get("players", []))} players, {len(data.get("fines", []))} fines, updated {data.get("updated")})')
 

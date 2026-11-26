@@ -107,7 +107,7 @@
   const start = (data, live) => {
     data.finesUrl = MARK;
     if (live) {
-      data.ledger = {paid: live.paid || {}, accounts: live.accounts || {}, migrate: live.migrate || {}};
+      data.ledger = {paid: live.paid || {}, accounts: live.accounts || {}, migrate: live.migrate || {}, claims: live.claims || {}};
       data.officers = live.officers || [];
     }
     window.__DATA = data;
@@ -122,10 +122,16 @@
       requestAnimationFrame(() => { queued = false; addCsvButtons(); });
     }).observe(document.body, {childList: true, subtree: true});
   };
+  // The public ledger is a snapshot on Pages (hourly), so ordinary visitors make zero Supabase reads. R4s and writes
+  // still go through Supabase: loadLedger() reads with the key, ledger_post writes. Local builds without a snapshot
+  // fall back to one live ledger_get.
   Promise.all([
     realFetch('data.json', {cache: 'no-cache'}).then(r => { if (!r.ok) throw new Error('data.json: HTTP ' + r.status); return r.json(); }),
-    rpc('ledger_get', {p_key: null}).catch(() => null),  // the page refreshes it again anyway
-  ]).then(([data, live]) => start(data, live)).catch(err => {
+    realFetch('ledger.json', {cache: 'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([data, live]) => {
+    if (live && live.paid) return start(data, live);
+    return rpc('ledger_get', {p_key: null}).then(fresh => start(data, fresh)).catch(() => start(data, null));
+  }).catch(err => {
     document.body.classList.remove('gating');
     document.body.insertAdjacentHTML('afterbegin',
       '<p style="padding:16px;font:16px system-ui">Could not load the dashboard data. Reload the page in a minute. (' +

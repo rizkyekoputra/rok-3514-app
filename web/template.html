@@ -1810,7 +1810,7 @@ $('rosterAll').addEventListener('change', e => {
 // the change at once and refreshes everything from the sheet in the background.
 function saving(b) { b.disabled = true; b.dataset.label = b.textContent; b.textContent = 'Saving…'; }
 function notSaved(b, err) { alert('Not saved: ' + err.message + '. Try again.'); b.disabled = false; b.textContent = b.dataset.label; }
-function saved() { renderMge(); renderGh(); renderAm(); renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMigrate(); loadLedger(); }
+function saved() { renderMge(); renderGh(); renderAm(); renderOfficer(); renderFines(); renderPlayer(); renderTable(); renderRoster(); renderReview(); renderMigrate(); loadLedger(true); }
 function typeSaved(ids, type, approved) {
   const now = new Date().toISOString();
   ids.forEach(id => { changes[id] = approved ? {type, by: officer, decided: now} : {...changes[id], pending: {type, by: officer, time: now}}; });
@@ -1917,8 +1917,11 @@ async function identify() {
 
 // Live payments and account changes from the web app (slow at times: 60 s timeout, one retry). Until it answers,
 // the page shows the copy published with it (DATA.ledger).
-async function loadLedger() {
+async function loadLedger(force = false) {
   if (!DATA.finesUrl) return;
+  // Public visitors already have the hourly snapshot in DATA.ledger: don't spend Supabase egress on a second full read.
+  // A write (saved()) forces a refresh so the actor sees their own change; R4s always refresh with their key below.
+  if (!r4key && !force && DATA.ledger) return;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const r = await fetch(DATA.finesUrl + (r4key ? '?key=' + encodeURIComponent(r4key) : ''),
@@ -2385,13 +2388,17 @@ let rt;
 addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (tab === 'activity') renderOverview(); renderPlayer(); }, 150); });
 // With ?key= the page stays behind the "Checking" screen until the key is verified, then renders in R4 mode.
 readKey();
-if (DATA.ledger) { ledger = DATA.ledger.paid || {}; changes = DATA.ledger.accounts || {}; mig = DATA.ledger.migrate || {}; }
+if (DATA.ledger) {
+  ledger = DATA.ledger.paid || {}; changes = DATA.ledger.accounts || {}; mig = DATA.ledger.migrate || {};
+  claims = DATA.ledger.claims || {};  // public claim statuses are in the snapshot too
+}
 (async () => {
   const known = await identify();
-  if (r4key && !known) await loadLedger();  // key not in the published list (e.g. just made): ask the sheet
+  if (r4key && !known) await loadLedger(true);  // key not in the published list (e.g. just made): ask the ledger
   document.body.classList.remove('gating');
   renderAll(); renderFines(); renderOfficer(); route();
-  if (!r4key || known) loadLedger();  // refresh in the background
+  if (r4key && known) loadLedger();  // R4-only fields (claimList, zeroList) are not in the public snapshot
+  else if (!DATA.ledger) loadLedger(true);  // no snapshot: retry the live ledger once
 })();
 </script>
 </body>

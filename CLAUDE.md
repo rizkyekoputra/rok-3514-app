@@ -78,11 +78,15 @@ read it (404); `--write` also refuses unless `LEDGER_IMPORT_AFTER_CUTOVER=1`. Ke
 
 ## Dashboard
 
-`scripts/web/build.py` builds `site/` from `web/template.html` + `data/season.json`; `web/loader.js` loads
-`data.json` + `ledger_get` and runs the page's script, with its ledger calls going to Supabase.
-Deployed by `.github/workflows/pages.yml` on every push (so on every new `data/season.json`). The template started as
-a copy of the old tracker's `dashboard_template.html` (14 Nov 2026, since deleted there), patched for Supabase; all UI
-work happens here. Remaining phases: `docs/frontend-plan.md`.
+`scripts/web/build.py` builds `site/` from `web/template.html` + `data/season.json` + `data/ledger_public.json`;
+`web/loader.js` loads `data.json` + `ledger.json` (the public ledger snapshot) and runs the page's script. Ordinary
+visitors never call Supabase; R4 logins and writes do, and a write refreshes the ledger immediately. The snapshot is
+written hourly by `scripts/web/snapshot_ledger.py` (`.github/workflows/ledger-snapshot.yml`), and its commit rebuilds
+Pages. This is deliberate: full `ledger_get` on every view exhausted the 5 GB/month egress quota. Deployed by
+`.github/workflows/pages.yml` on every push. The template started as a copy of the old tracker's
+`dashboard_template.html` (14 Nov 2026, since deleted there), patched for Supabase; all UI work happens here.
+Remaining phases: `docs/frontend-plan.md`. Moving to another Supabase project: `scripts/admin/migrate_project.py`
+(dry run first, `--write` to copy tables + proof files; credentials only from env/`.env`).
 
 ## Plans
 
