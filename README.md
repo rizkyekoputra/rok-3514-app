@@ -106,13 +106,19 @@ for its billing cycle to reset if its API answers 402.
 1. New project dashboard: note the URL, publishable key and project ref; reset the database password.
 2. Locally: `supabase link --project-ref NEW_REF` (enter the password when asked).
 3. `.env` here (gitignored): new `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`; plus `OLD_DATABASE_URL`,
-   `NEW_DATABASE_URL`, `OLD_SUPABASE_URL`, `OLD_SUPABASE_SERVICE_KEY` for the copy (direct Postgres URLs from
-   Project Settings → Database, with the password).
+   `NEW_DATABASE_URL`, `OLD_SUPABASE_URL`, `OLD_SUPABASE_SERVICE_KEY` for the copy. Use the **Session pooler**
+   connection strings (Port 5432, user `postgres.<ref>`) from each project's Connect panel: the direct `db.<ref>.`
+   host is IPv6-only and won't resolve from an IPv4-only network.
 4. GitHub secrets: `gh secret set SUPABASE_URL -R rizkyekoputra/rok-3514-app` and
    `gh secret set SUPABASE_SERVICE_KEY -R rizkyekoputra/rok-3514-app` (paste at the prompt, never in chat).
-5. New project SQL Editor: create the Vault secret `github_recalc_token` (see below).
+5. New project SQL Editor: create (or `vault.update_secret` if it already exists) the Vault secret
+   `github_recalc_token` (see below).
 6. Run the migrations (`supabase db push --remote --dry-run` first, then `--remote`) and deploy `claim-files`.
-7. `python3 scripts/admin/migrate_project.py` (dry run) → `--write` (tables + proof files, verified by row counts).
+7. `python3 scripts/admin/migrate_project.py` (dry run) → `--write` (tables, verified by row counts). Proof files need
+   the old Storage API, so `--write` stops there if the old project is still restricted; `--files-only` copies them
+   later. For the Nov 2026 move the 4 files were deliberately **not** copied — their `claim_files` rows are in the new
+   ledger, so the claim history is intact, but opening those proofs won't work. If that becomes necessary, restore the
+   old project and run `python3 scripts/admin/migrate_project.py --files-only`.
 8. Update `supabase.json` (URL, publishable key, ref) and commit; run the `Ledger snapshot` workflow by hand and check
    the site, including an R4 `?key=` link. Only then retire the old project.
 
